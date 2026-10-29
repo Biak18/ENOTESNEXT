@@ -1,0 +1,17 @@
+/* Hallmark · shape: app screen · genre: modern-minimal · theme: Wayfind (deal 3/3) · redesign: full
+ * scope: LoginScreen · ENOTES palette and DM Sans retained
+ * axes: light/mono/cool · posture: restrained · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H5 E4 S5 R5 V4 · weakest: E, removed the invented workspace preview */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { overflow-x: clip; }
+html { scrollbar-color: var(--color-muted) var(--color-paper); }
+.login-screen { color-scheme: light; font-synthesis: none; font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased; caret-color: var(--color-accent); }
+.login-screen ::selection { background: var(--lavender); color: var(--navy); }
+.login-screen :focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.login-screen a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.16em; }
+.login-screen h1, .login-screen h2, .login-screen h3 { min-width: 0; overflow-wrap: break-word; text-wrap: balance; }
+.login-screen p { margin: 0; text-wrap: pretty; }
+.login-screen img, .login-screen video { display: block; max-width: 100%; height: auto; }
+.login-screen svg { display: block; }
+.login-screen button, .login-screen input, .login-screen select, .login-screen textarea { font: inherit; }
+@media (prefers-reduced-motion: reduce) { .login-screen *, .login-screen *::before, .login-screen *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }

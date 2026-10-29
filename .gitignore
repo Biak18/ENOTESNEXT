@@ -1,0 +1,36 @@
+# Build artifacts
+bin/
+obj/
+dist/
+dist-ssr/
+
+# .NET user files
+*.user
+*.suo
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Local env / secrets (never commit; real values live in user-secrets / local env)
+.env
+.env.*
+*.local
+
+# IDE
+.vs/
+.vscode/
+.idea/
+
+# Agent tool directories
+.claude/
+.codex/
+.continue/
+.hallmark/
+
+# OS
+.DS_Store
+Thumbs.db

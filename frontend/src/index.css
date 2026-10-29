@@ -1,0 +1,63 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap");
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@theme {
+  --font-sans: "DM Sans", "Segoe UI", sans-serif;
+}
+:root {
+  @apply font-sans;
+  @apply [color:var(--ink)];
+  @apply [background:var(--lavender)];
+  @apply [font-synthesis:none];
+  @apply [text-rendering:optimizeLegibility];
+  @apply [-webkit-font-smoothing:antialiased];
+  @apply [-moz-osx-font-smoothing:grayscale];
+  @apply [font-optical-sizing:auto];
+  @apply [font-size:12px];
+  /* Reference palette: royal blue, azure, soft lavender, black, and white. */
+  --white: #ffffff;
+  --lavender: #e3e7fc;
+  --lavender-light: #f0f2fd;
+  --royal: #0056ff;
+  --azure: #2277ff;
+  --navy: #0b0c69;
+  --side: #0b0c69;
+  --workspace: #ffffff;
+  --line: #d7dcf0;
+  --ink: #17182a;
+  --primary: var(--royal);
+  --primary-hover: #064bd4;
+}
+* {
+  @apply [box-sizing:border-box];
+}
+html,
+body,
+#root {
+  @apply [width:100%];
+  @apply [min-width:320px];
+  @apply [height:100%];
+  @apply [min-height:100%];
+  @apply [margin:0];
+}
+body {
+  @apply [min-width:320px];
+  @apply [min-height:100vh];
+}
+button,
+input {
+  @apply [font:inherit];
+}
+button:focus-visible,
+input:focus-visible {
+  @apply [outline:2px_solid_var(--royal)];
+  @apply [outline-offset:2px];
+}
+button:disabled {
+  @apply [cursor:not-allowed];
+}
+::selection {
+  @apply [background:#cbd4fb];
+  @apply [color:#10234f];
+}

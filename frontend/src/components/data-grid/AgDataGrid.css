@@ -1,0 +1,100 @@
+@layer components {
+  .enotes-ag-grid-wrap {
+    @apply [flex:1_1_280px];
+    @apply [min-height:230px];
+    @apply [min-width:0];
+    @apply [display:flex];
+    @apply [flex-direction:column];
+  }
+  .enotes-ag-grid {
+    @apply [width:100%];
+    @apply [flex:1];
+    @apply [min-height:0];
+    @apply [border:1px_solid_#d7dcf0];
+    @apply [border-radius:3px];
+    @apply [overflow:hidden];
+    @apply [background:#ffffff];
+    font-family: var(--font-sans);
+    font-size: 12px;
+    /* alpine theme tuning toward the ENOTES palette */
+    --ag-header-background-color: #f0f2fd;
+    --ag-header-foreground-color: #40556b;
+    --ag-header-height: 30px;
+    --ag-row-height: 30px;
+    --ag-font-size: 12px;
+    --ag-foreground-color: #30344a;
+    --ag-border-color: #d7dcf0;
+    --ag-row-border-color: #eaecf6;
+    --ag-selected-row-background-color: #e3e7fc;
+    --ag-range-selection-border-color: var(--royal);
+    --ag-range-selection-background-color: rgba(0, 86, 255, 0.08);
+    --ag-cell-horizontal-border: solid #eaecf6;
+    --ag-header-cell-hover-background-color: #e3e7fc;
+    --ag-odd-row-background-color: #ffffff;
+  }
+  .enotes-ag-grid .ag-header-cell-label {
+    font-weight: 650;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    font-size: 10px;
+    justify-content: flex-start;
+  }
+  .enotes-ag-grid .ag-cell {
+    display: flex;
+    align-items: center;
+    padding-left: 9px;
+    padding-right: 9px;
+  }
+  .enotes-ag-grid .ag-cell.enotes-readonly-cell {
+    color: #78899b;
+    background-color: #fafbfc;
+  }
+  .enotes-ag-grid .ag-cell.row-number-cell {
+    justify-content: center;
+    color: #7d8b99;
+    background-color: #f8f9ff;
+    font-variant-numeric: tabular-nums;
+    font-weight: 550;
+  }
+  .enotes-ag-grid .ag-cell.enotes-number-cell {
+    justify-content: flex-end;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  /* plain-text (valueFormatter) cells wrap content in .ag-cell-value, which is
+     not a flex item, so justify-content alone won't move it — force text-align. */
+  .enotes-ag-grid .ag-cell.enotes-number-cell .ag-cell-value,
+  .enotes-ag-grid .ag-cell.enotes-number-cell .ag-cell-wrapper {
+    width: 100%;
+    text-align: right;
+    justify-content: flex-end;
+  }
+  .enotes-ag-grid .ag-cell.enotes-center-cell {
+    justify-content: center;
+  }
+  /* Global pinned footer (SNOTES pinnedBottomRowData) */
+  .enotes-ag-grid .ag-floating-bottom {
+    background: #f0f2fd;
+    border-top: 1px solid #d7dcf0;
+    font-weight: 600;
+  }
+  .enotes-ag-grid .ag-floating-bottom .ag-cell {
+    color: #40556b;
+    font-variant-numeric: tabular-nums;
+  }
+  .enotes-ag-grid .ag-cell.enotes-invalid-cell {
+    background-color: #fff1f0 !important;
+    color: #a64f4b !important;
+  }
+  .enotes-ag-grid .ag-cell-focus {
+    border: 1px solid var(--royal) !important;
+  }
+  .enotes-ag-grid .ag-empty-overlay {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #8997a5;
+    font-size: 11px;
+  }
+}

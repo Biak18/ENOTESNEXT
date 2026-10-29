@@ -1,0 +1,346 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: explore.spec.ts >> purchase rows can be added and deleted
+- Location: e2e\explore.spec.ts:3:1
+
+# Error details
+
+```
+Test timeout of 90000ms exceeded.
+```
+
+# Page snapshot
+
+```yaml
+- main [ref=e3]:
+  - generic [ref=e4]:
+    - button "Collapse menu" [expanded] [ref=e5] [cursor=pointer]:
+      - generic [ref=e6]: E
+      - generic [ref=e7]:
+        - text: ENOTES
+        - generic [ref=e8]: Business system
+    - generic [ref=e9]:
+      - button "Open dashboard" [ref=e10] [cursor=pointer]
+      - generic "Purchase > Registration" [ref=e13]
+    - generic [ref=e14]:
+      - generic [ref=e18]:
+        - combobox "Search menu" [ref=e19]: registration
+        - group [aria-hidden]
+      - generic "Local demo user" [ref=e20]:
+        - generic [ref=e21]: AD
+        - generic [ref=e22]:
+          - strong [ref=e23]: Admin
+          - generic [ref=e24]: Demo company
+  - generic [ref=e25]:
+    - complementary [ref=e27]:
+      - navigation "Main menu" [ref=e28]:
+        - list [ref=e29]:
+          - listitem [ref=e30]:
+            - button "Purchase" [expanded] [ref=e31] [cursor=pointer]
+            - list [ref=e37]:
+              - listitem [ref=e38]:
+                - button "Registration Current screen" [ref=e39] [cursor=pointer]:
+                  - mark [ref=e41]: Registration
+                  - generic [ref=e42]: Current screen
+          - listitem [ref=e43]:
+            - button "Sales" [expanded] [ref=e44] [cursor=pointer]
+            - list [ref=e50]:
+              - listitem [ref=e51]:
+                - button [ref=e52] [cursor=pointer]:
+                  - mark [ref=e54]: Registration
+    - generic [ref=e56]:
+      - generic [ref=e57]:
+        - tablist "Open screens" [ref=e58]:
+          - tab "Dashboard" [ref=e59] [cursor=pointer]
+          - button "Close Dashboard" [ref=e60] [cursor=pointer]: ×
+          - tab "Purchase registration" [selected] [ref=e61] [cursor=pointer]
+          - button "Close Purchase registration" [ref=e62] [cursor=pointer]: ×
+        - toolbar "Active screen actions" [ref=e63]:
+          - button "Search" [ref=e64] [cursor=pointer]
+          - button "Insert" [ref=e67] [cursor=pointer]
+          - button "Delete" [ref=e70] [cursor=pointer]
+          - button "Save" [ref=e73] [cursor=pointer]
+          - button "Excel" [ref=e76] [cursor=pointer]
+      - generic [ref=e81]:
+        - region "Purchase search conditions" [ref=e82]:
+          - generic [ref=e83]:
+            - generic [ref=e84]:
+              - generic [ref=e85]: Item
+              - generic [ref=e88]:
+                - textbox "Item" [ref=e89]:
+                  - /placeholder: Code or description
+                - group [aria-hidden]
+            - generic [ref=e90]:
+              - generic [ref=e91]: Category
+              - generic [ref=e96]:
+                - combobox "Category" [ref=e97]
+                - button "Show options" [ref=e99] [cursor=pointer]
+                - group [aria-hidden]
+            - generic [ref=e102]:
+              - generic [ref=e103]: Location
+              - generic [ref=e108]:
+                - combobox "Location" [ref=e109]
+                - button "Show options" [ref=e111] [cursor=pointer]
+                - group [aria-hidden]
+            - generic [ref=e114]:
+              - generic [ref=e115]: Order date
+              - generic [ref=e117]:
+                - group [ref=e120]:
+                  - generic [ref=e121]:
+                    - generic [ref=e122]:
+                      - spinbutton "Year" [ref=e123]: YYYY
+                      - text: /
+                    - generic [ref=e124]:
+                      - spinbutton "Month" [ref=e125]: MM
+                      - text: /
+                    - spinbutton "Day" [ref=e127]: DD
+                  - button "Choose date" [ref=e129] [cursor=pointer]
+                  - group [aria-hidden]
+                  - textbox [aria-hidden] [ref=e132]
+                - generic [ref=e133]: –
+                - group [ref=e136]:
+                  - generic [ref=e137]:
+                    - generic [ref=e138]:
+                      - spinbutton "Year" [ref=e139]: YYYY
+                      - text: /
+                    - generic [ref=e140]:
+                      - spinbutton "Month" [ref=e141]: MM
+                      - text: /
+                    - spinbutton "Day" [ref=e143]: DD
+                  - button "Choose date" [ref=e145] [cursor=pointer]
+                  - group [aria-hidden]
+                  - textbox [aria-hidden] [ref=e148]
+        - generic [ref=e149]:
+          - generic [ref=e150]: PO-2026-0184·Local draft·13 line items
+          - generic [ref=e151]: Unsaved changes
+        - region "Purchase order header" [ref=e152]:
+          - generic [ref=e153]:
+            - generic [ref=e154]:
+              - heading "Purchase order header" [level=2] [ref=e155]
+              - paragraph [ref=e156]: Supplier, dates, and reference for this document.
+            - generic [ref=e157]: Local draft
+          - generic [ref=e158]:
+            - generic [ref=e159]:
+              - text: Order number
+              - generic [ref=e161]:
+                - textbox "Order number" [ref=e162]: PO-2026-0184
+                - group [aria-hidden]
+            - generic [ref=e163]:
+              - text: Supplier
+              - generic [ref=e167]:
+                - combobox "Supplier Show options" [ref=e168]: Golden Star Trading
+                - button "Show options" [ref=e170] [cursor=pointer]
+                - group [aria-hidden]
+            - generic [ref=e173]:
+              - text: Order date
+              - generic [ref=e175]:
+                - textbox "Order date" [ref=e176]: 2026-10-22
+                - group [aria-hidden]
+            - generic [ref=e177]:
+              - text: Expected date
+              - generic [ref=e179]:
+                - textbox "Expected date" [ref=e180]: 2026-10-31
+                - group [aria-hidden]
+            - generic [ref=e181]:
+              - text: Currency
+              - generic [ref=e185]:
+                - combobox "Currency Show options" [ref=e186]: USD
+                - button "Show options" [ref=e188] [cursor=pointer]
+                - group [aria-hidden]
+            - generic [ref=e191]:
+              - text: Supplier reference
+              - generic [ref=e193]:
+                - textbox "Supplier reference" [ref=e194]:
+                  - /placeholder: Invoice number
+                  - text: GST-INV-2086
+                - group [aria-hidden]
+            - generic [ref=e195]:
+              - text: Notes
+              - generic [ref=e197]:
+                - textbox "Notes" [ref=e198]:
+                  - /placeholder: Delivery notes
+                  - text: Delivered to the Yangon Main store counter.
+                - group [aria-hidden]
+        - region "Purchase order detail lines":
+          - generic [ref=e199]:
+            - generic [ref=e200]:
+              - heading "Purchase lines 13" [level=2] [ref=e201]:
+                - text: Purchase lines
+                - generic [ref=e202]: "13"
+              - paragraph [ref=e203]: Edit cells inline. Quantity, price, and totals recalculate as you type.
+            - generic [ref=e204]:
+              - generic [ref=e205]:
+                - text: Group by
+                - generic [ref=e209]:
+                  - combobox "Group purchase lines by" [ref=e210]: No grouping
+                  - button "Show options" [ref=e212] [cursor=pointer]
+                  - group [aria-hidden]
+              - button "Add purchase line" [active] [ref=e215] [cursor=pointer]: Add row
+              - button "Delete focused purchase line" [ref=e219] [cursor=pointer]: Delete row
+          - region "Editable purchase order lines" [ref=e224]:
+            - generic [ref=e225]:
+              - treegrid [ref=e227]:
+                - rowgroup [ref=e228]:
+                  - row [ref=e229]:
+                    - columnheader "ITEM CODE" [ref=e230]:
+                      - text:  
+                      - generic:    
+                    - columnheader "DESCRIPTION" [ref=e233]:
+                      - text:  
+                      - generic:    
+                    - columnheader "CATEGORY" [ref=e236]:
+                      - text:  
+                      - generic:    
+                    - columnheader "LOCATION" [ref=e239]:
+                      - text:  
+                      - generic:    
+                    - columnheader "UNIT" [ref=e242]:
+                      - text:  
+                      - generic:    
+                    - columnheader "QUANTITY" [ref=e245]:
+                      - text:  
+                      - generic:    
+                    - columnheader "UNIT PRICE" [ref=e248]:
+                      - text:  
+                      - generic:    
+                    - columnheader "LINE TOTAL" [ref=e251]:
+                      - text:  
+                      - generic:    
+                - rowgroup [ref=e254]:
+                  - row [ref=e255]:
+                    - gridcell "ITM-1001" [ref=e256]
+                    - gridcell "A4 Copy Paper, 80 gsm" [ref=e257]
+                    - gridcell "Office supplies" [ref=e258]
+                    - gridcell "Yangon Main" [ref=e259]
+                    - gridcell "Ream" [ref=e260]
+                    - gridcell "24" [ref=e261]
+                    - gridcell "$4.80" [ref=e262]
+                    - gridcell "$115.20" [ref=e263]
+                  - row [ref=e264]:
+                    - gridcell "ITM-1002" [ref=e265]
+                    - gridcell "Ballpoint Pen, Blue" [ref=e266]
+                    - gridcell "Writing" [ref=e267]
+                    - gridcell "Yangon Main" [ref=e268]
+                    - gridcell "Box" [ref=e269]
+                    - gridcell "12" [ref=e270]
+                    - gridcell "$8.50" [ref=e271]
+                    - gridcell "$102.00" [ref=e272]
+                  - row [ref=e273]:
+                    - gridcell "ITM-1003" [ref=e274]
+                    - gridcell "Thermal Receipt Roll" [ref=e275]
+                    - gridcell "Point of sale" [ref=e276]
+                    - gridcell "Mandalay" [ref=e277]
+                    - gridcell "Pack" [ref=e278]
+                    - gridcell "18" [ref=e279]
+                    - gridcell "$12.00" [ref=e280]
+                    - gridcell "$216.00" [ref=e281]
+                  - row [ref=e282]:
+                    - gridcell "ITM-1004" [ref=e283]
+                    - gridcell "Desktop Calculator" [ref=e284]
+                    - gridcell "Office supplies" [ref=e285]
+                    - gridcell "Yangon Main" [ref=e286]
+                    - gridcell "Each" [ref=e287]
+                    - gridcell "6" [ref=e288]
+                    - gridcell "$16.90" [ref=e289]
+                    - gridcell "$101.40" [ref=e290]
+                  - row [ref=e291]:
+                    - gridcell "ITM-1005" [ref=e292]
+                    - gridcell "Lever Arch File, Navy" [ref=e293]
+                    - gridcell "Filing" [ref=e294]
+                    - gridcell "Naypyidaw" [ref=e295]
+                    - gridcell "Each" [ref=e296]
+                    - gridcell "30" [ref=e297]
+                    - gridcell "$3.25" [ref=e298]
+                    - gridcell "$97.50" [ref=e299]
+                  - row [ref=e300]:
+                    - gridcell "ITM-1006" [ref=e301]
+                    - gridcell "Permanent Marker, Black" [ref=e302]
+                    - gridcell "Writing" [ref=e303]
+                    - gridcell "Mandalay" [ref=e304]
+                    - gridcell "Box" [ref=e305]
+                    - gridcell "8" [ref=e306]
+                    - gridcell "$11.40" [ref=e307]
+                    - gridcell "$91.20" [ref=e308]
+                  - row [ref=e309]:
+                    - gridcell "ITM-1007" [ref=e310]
+                    - gridcell "Receipt Printer Paper" [ref=e311]
+                    - gridcell "Point of sale" [ref=e312]
+                    - gridcell "Yangon Main" [ref=e313]
+                    - gridcell "Pack" [ref=e314]
+                    - gridcell "10" [ref=e315]
+                    - gridcell "$9.75" [ref=e316]
+                    - gridcell "$97.50" [ref=e317]
+                  - row [ref=e318]:
+                    - gridcell "ITM-1008" [ref=e319]
+                    - gridcell "Document Wallet, A4" [ref=e320]
+                    - gridcell "Filing" [ref=e321]
+                    - gridcell "Naypyidaw" [ref=e322]
+                    - gridcell "Pack" [ref=e323]
+                    - gridcell "15" [ref=e324]
+                    - gridcell "$6.20" [ref=e325]
+                    - gridcell "$93.00" [ref=e326]
+                  - row [ref=e327]:
+                    - gridcell "ITM-1009" [ref=e328]
+                    - gridcell "Thermal Label Roll, 50x30" [ref=e329]
+                    - gridcell "Point of sale" [ref=e330]
+                    - gridcell "Naypyidaw" [ref=e331]
+                    - gridcell "Roll" [ref=e332]
+                    - gridcell "40" [ref=e333]
+                    - gridcell "$2.40" [ref=e334]
+                    - gridcell "$96.00" [ref=e335]
+                  - row [ref=e336]:
+                    - gridcell "ITM-1010" [ref=e337]
+                    - gridcell "Tape Dispenser, Heavy Duty" [ref=e338]
+                    - gridcell "Hardware" [ref=e339]
+                    - gridcell "Yangon Main" [ref=e340]
+                    - gridcell "Each" [ref=e341]
+                    - gridcell "5" [ref=e342]
+                    - gridcell "$18.60" [ref=e343]
+                    - gridcell "$93.00" [ref=e344]
+                  - row [ref=e345]:
+                    - gridcell "ITM-1011" [ref=e346]
+                    - gridcell "Gel Pen, 0.5 mm" [ref=e347]
+                    - gridcell "Writing" [ref=e348]
+                    - gridcell "Naypyidaw" [ref=e349]
+                    - gridcell "Box" [ref=e350]
+                    - gridcell "20" [ref=e351]
+                    - gridcell "$5.40" [ref=e352]
+                    - gridcell "$108.00" [ref=e353]
+                  - row [ref=e354]:
+                    - gridcell "ITM-1012" [ref=e355]
+                    - gridcell "Sticky Notes, 3x3 in" [ref=e356]
+                    - gridcell "Office supplies" [ref=e357]
+                    - gridcell "Mandalay" [ref=e358]
+                    - gridcell "Pack" [ref=e359]
+                    - gridcell "25" [ref=e360]
+                    - gridcell "$2.05" [ref=e361]
+                    - gridcell "$51.25" [ref=e362]
+                  - row [ref=e363]:
+                    - gridcell "NEW-014" [ref=e364]
+                    - gridcell "New purchase item" [ref=e365]
+                    - gridcell "Office supplies" [ref=e366]
+                    - gridcell "Yangon Main" [ref=e367]
+                    - gridcell "Each" [ref=e368]
+                    - gridcell "1" [ref=e369]
+                    - gridcell "$0.00" [ref=e370]
+                    - gridcell "$0.00" [ref=e371]
+                - rowgroup
+                - rowgroup [ref=e375]
+                - rowgroup
+              - text:    
+          - generic [ref=e377]:
+            - generic [ref=e378]: 13 line items · 214 total units
+            - generic [ref=e379]:
+              - text: Order total
+              - strong [ref=e380]: $1,262.05
+          - generic [ref=e381]:
+            - generic [ref=e382]: Mock data · changes stay in this browser tab
+            - generic [ref=e383]: Last order date 10/22/2026 · USD
+      - status [ref=e384]: A purchase detail row was added to this local draft.
+```
