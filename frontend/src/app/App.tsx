@@ -10,9 +10,13 @@ import "../features/screen-overrides.css";
 import "../App.css";
 import "../polish.css";
 
-function WorkspaceApp() {
-  const { user, menuItems, screenTitles, loadingMenu, apiOnline, logout } =
-    useApp();
+/**
+ * The workspace itself. `SessionRoot` gives it a key that changes on every
+ * login, so open tabs, screen refresh handles, or notices belonging to a
+ * previous session never leak into the next one — even for the same account.
+ */
+function Workspace() {
+  const { user, menuItems, screenTitles, loadingMenu, apiOnline, logout } = useApp();
   const { tabs, activeTabId, setActiveTabId, openMenu, closeTab } =
     useWorkspaceTabs(screenTitles);
   const { supportedByTab, registerHandle, dispatch, canClose, unregister } =
@@ -25,16 +29,14 @@ function WorkspaceApp() {
     [activeTab, supportedByTab],
   );
 
-  if (!user) {
-    return <LoginScreen />;
-  }
-
   const close = async (tabId: string) => {
     // canClose may await the showEnConfirm question dialog.
     if (!(await canClose(tabId))) return;
     closeTab(tabId, () => true);
     unregister(tabId);
   };
+
+  if (!user) return null; // SessionRoot guarantees a user here
 
   return (
     <AppShell
@@ -59,10 +61,17 @@ function WorkspaceApp() {
   );
 }
 
+/** Swap to the login screen when signed out; remount a workspace per login. */
+function SessionRoot() {
+  const { user, session } = useApp();
+  if (!user) return <LoginScreen />;
+  return <Workspace key={session} />;
+}
+
 export default function App() {
   return (
     <AppProvider>
-      <WorkspaceApp />
+      <SessionRoot />
     </AppProvider>
   );
 }

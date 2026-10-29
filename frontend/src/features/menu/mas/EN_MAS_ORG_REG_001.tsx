@@ -106,11 +106,6 @@ export const CompanyRegister = forwardRef<ScreenHandle, ScreenProps>(
       }
     }, [search]);
 
-    useEffect(() => {
-      void load();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
     const columns = useMemo<ColDef[]>(
       () =>
         baseColumnDefs.map((col) => {

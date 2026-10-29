@@ -8,17 +8,28 @@ import type {
   SaveResponse,
 } from "./contracts";
 
-/** GET /api/v1/Menus?search= → flat menu rows scoped by the JWT's company/role. */
+/**
+ * GET /api/v1/Menus?search= - ALL menu rows (ap_cus_reg_001_s, no grant
+ * filtering). Admin registration screens use this to edit sys_menu itself.
+ */
 export function getMenus(search?: string, signal?: AbortSignal) {
-  // Background cache fill (TanStack Query) — no global spinner.
   return apiRequest<MenuDto[]>({
     path: api.v1("Menus"),
     query: { search },
     signal,
-    showSpinner: false,
   });
 }
 
+/**
+ * GET /api/v1/Menus/my?search= - grant-aware menu tree for the sidebar
+ * (ap_enotes_001_s): company grant, then user override (A/N), then role
+ * grant, all resolved from the JWT caller context on the backend. Unlike
+ * getMenus (registration screen, unfiltered), this returns only the menus
+ * the caller may see.
+ */
+export function getMyMenus(search?: string, signal?: AbortSignal) {
+  return callApi<MenuDto[]>("Menus/my", { query: { search }, signal });
+}
 /* --- Manual screen endpoints ---------------------------------------------- */
 
 /**
@@ -126,3 +137,5 @@ export function savePurchaseOrder(order: PurchaseOrderSaveRequest) {
 
 /* Per-entity get/save wrappers were removed: each screen now calls its own
  * controller via fnGetDataSet / fnSave / callApi directly (SNOTES pattern). */
+
+

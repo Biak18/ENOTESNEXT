@@ -1,7 +1,6 @@
 ﻿import {
   forwardRef,
   useCallback,
-  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -142,11 +141,6 @@ export const UserRegister = forwardRef<ScreenHandle, ScreenProps>(
         setBusy(false);
       }
     }, [search]);
-
-    useEffect(() => {
-      void load();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     const columns = useMemo<ColDef[]>(
       () =>

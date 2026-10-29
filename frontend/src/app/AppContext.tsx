@@ -9,11 +9,13 @@ import {
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { MenuNode } from "../types";
 import { currentUser, signIn, signOut, type AuthUser } from "../api/auth";
-import { getMenus } from "../api/endpoints";
+import { getMyMenus } from "../api/endpoints";
 import { mapMenuDtoToNodes, mapMenuTitles } from "../api/menuMapper";
 
 export type AppContextValue = {
   user: AuthUser | null;
+  /** Bumped on every successful login — sessions never share workspace state. */
+  session: number;
   menuItems: MenuNode[];
   screenTitles: Record<string, string>;
   loadingMenu: boolean;
@@ -32,6 +34,7 @@ export function useApp(): AppContextValue {
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(() => currentUser());
+  const [session, setSession] = useState(1);
   const queryClient = useQueryClient();
 
   // Server state via TanStack Query: cached, deduplicated, retried, and
@@ -39,7 +42,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // different login always fetches its own tree.
   const menuQuery = useQuery({
     queryKey: ["menus", user?.cdCom ?? null],
-    queryFn: ({ signal }) => getMenus(undefined, signal),
+    queryFn: ({ signal }) => getMyMenus(undefined, signal),
     enabled: !!user,
     staleTime: 5 * 60 * 1000, // sidebar is fresh for 5 min, no refetch spam
   });
@@ -59,6 +62,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     async (cdCom: string, cdUser: string, password: string) => {
       const authUser = await signIn(cdCom, cdUser, password);
       setUser(authUser);
+      // New session id → the keyed workspace remounts fresh for this login.
+      setSession((n) => n + 1);
     },
     [],
   );
@@ -73,6 +78,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AppContextValue>(
     () => ({
       user,
+      session,
       menuItems,
       screenTitles,
       loadingMenu,
@@ -80,8 +86,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       login,
       logout,
     }),
-    [user, menuItems, screenTitles, loadingMenu, apiOnline, login, logout],
+    [user, session, menuItems, screenTitles, loadingMenu, apiOnline, login, logout],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
+

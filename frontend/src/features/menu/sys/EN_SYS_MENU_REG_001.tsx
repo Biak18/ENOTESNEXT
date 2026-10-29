@@ -126,11 +126,6 @@ export const MenuRegisterScreen = forwardRef<ScreenHandle, ScreenProps>(
       }
     }, [search]);
 
-    useEffect(() => {
-      void load();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
     const tree = useMemo(() => buildTree(rows), [rows]);
 
     // A node id queued for tree focus once it exists in the rendered tree.
