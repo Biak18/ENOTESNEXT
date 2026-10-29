@@ -1,7 +1,6 @@
-﻿import {
+import {
   forwardRef,
   useCallback,
-  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -14,10 +13,11 @@ import type {
   AgRow,
 } from "../../../components/data-grid/agDataGridTypes";
 import {
-  EnTree,
-  EnTreeCheck,
-} from "../../../components/controls";
-import type { TreeNode, TreeColumn } from "../../../components/controls";
+  EnTreeView,
+  type TreeNode,
+  type TreeColumn,
+} from "../../../components/tree";
+import { EnTreeCheck } from "../../../components/controls";
 import {
   SearchPanel,
   SearchPanelField,
@@ -70,9 +70,31 @@ function buildMenuTree(menus: MenuDto[]): TreeNode<NodeData>[] {
   return roots;
 }
 
+
+/** Depth-first lookup of a tree node by its menu id. */
+function findNode(
+  nodes: TreeNode<NodeData>[],
+  id: string,
+): TreeNode<NodeData> | null {
+  for (const n of nodes) {
+    if (n.id === id) return n;
+    const hit = n.children ? findNode(n.children, id) : null;
+    if (hit) return hit;
+  }
+  return null;
+}
+
+/** The node itself plus every recursive descendant (folder cascade). */
+function collectSubtreeIds(node: TreeNode<NodeData>): string[] {
+  const ids = [node.id];
+  for (const child of node.children ?? [])
+    ids.push(...collectSubtreeIds(child));
+  return ids;
+}
+
 /**
- * Company в†” menu grant (sys_companymenu) вЂ” mirrors M_SYS_AUT_REG_001.
- * Company grid + user grid + two menu trees (Available в†’ Assigned). Tick a
+ * Company ↔ menu grant (sys_companymenu) — mirrors M_SYS_AUT_REG_001.
+ * Company grid + user grid + two menu trees (Available → Assigned). Tick a
  * menu in Assigned to grant it to the focused company.
  */
 export const CompanyMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
@@ -83,13 +105,11 @@ export const CompanyMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
     const [assigned, setAssigned] = useState<Set<string>>(new Set());
     const [focusedCompany, setFocusedCompany] = useState<string | null>(null);
     const [dirty, setDirty] = useState(false);
-    const [busy, setBusy] = useState(false);
     const changed = useRef<Map<string, boolean>>(new Map());
     const companyGridRef = useRef<AgDataGridHandle>(null);
     const userGridRef = useRef<AgDataGridHandle>(null);
 
     const load = useCallback(async () => {
-      setBusy(true);
       try {
         const [companyList, userList, menus] = await Promise.all([
           fnGetDataSet<CompanyDto[]>("Companies"),
@@ -104,19 +124,12 @@ export const CompanyMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
         setDirty(false);
       } catch (e) {
         await showEnDialog("error", e instanceof ApiError ? e.message : "Failed to load data.");
-      } finally {
-        setBusy(false);
       }
     }, []);
-
-    useEffect(() => {
-      void load();
-    }, [load]);
 
     // Load the focused company's assigned menus.
     const loadAssigned = useCallback(
       async (cdCompany: string) => {
-        setBusy(true);
         try {
           const rows = await fnGetDataSet<CompanyMenuDto[]>(
             `CompanyMenus/${encodeURIComponent(cdCompany)}`,
@@ -126,8 +139,6 @@ export const CompanyMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
           setDirty(false);
         } catch (e) {
           await showEnDialog("error", e instanceof ApiError ? e.message : "Failed to load assigned menus.");
-        } finally {
-          setBusy(false);
         }
       },
       []
@@ -149,16 +160,24 @@ export const CompanyMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
           await showEnDialog("error", "Select a company first.");
           return;
         }
+        // Folder ticks cascade visually over the whole subtree. The backend
+        // mirrors this on save (cascade-on-write), so `changed` keeps only
+        // the toggled row - the backend writes the descendant rows.
+        const node = findNode(menuTree, cdMenu);
+        const ids =
+          node && node.data?.fgType === "F"
+            ? collectSubtreeIds(node)
+            : [cdMenu];
         setAssigned((current) => {
           const next = new Set(current);
-          if (checked) next.add(cdMenu);
-          else next.delete(cdMenu);
+          if (checked) ids.forEach((id) => next.add(id));
+          else ids.forEach((id) => next.delete(id));
           return next;
         });
         changed.current.set(cdMenu, checked);
         setDirty(true);
       },
-      [focusedCompany],
+      [focusedCompany, menuTree],
     );
 
     const columns = useMemo<TreeColumn<NodeData>[]>(
@@ -187,7 +206,6 @@ export const CompanyMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
         await showEnDialog("info", "There are no changes to save.");
         return;
       }
-      setBusy(true);
       try {
         const items: CompanyMenuItem[] = [...changed.current.entries()].map(
           ([cdMenu, isAssigned]) => ({ cdMenu, isAssigned }),
@@ -198,13 +216,12 @@ export const CompanyMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
         });
         setDirty(false);
         changed.current.clear();
+        await loadAssigned(focusedCompany);
         await showEnDialog("success", `Successfully saved ${res.savedCount ?? items.length} assignment${(res.savedCount ?? items.length) === 1 ? "" : "s"}.`);
       } catch (e) {
         await showEnDialog("error", e instanceof ApiError ? e.message : "Save failed.");
-      } finally {
-        setBusy(false);
       }
-    }, [focusedCompany]);
+    }, [focusedCompany, loadAssigned]);
 
     useImperativeHandle(
       ref,
@@ -224,9 +241,7 @@ export const CompanyMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
         <SearchPanel ariaLabel="Company menu access">
           <SearchPanelField title="Company" htmlFor="companymenu-note">
             <span className="px-1 text-xs text-[#8a97a5]">
-              {busy
-                ? "LoadingвЂ¦"
-                : focusedCompany
+              {focusedCompany
                   ? `Assigning menus to ${focusedCompany}`
                   : "Select a company to assign menus"}
             </span>
@@ -260,7 +275,11 @@ export const CompanyMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
                   ref={userGridRef}
                   ariaLabel="Users"
                   columnDefs={userColDefs}
-                  rowData={users as unknown as AgRow[]}
+                  rowData={
+                    (focusedCompany
+                      ? users.filter((u) => u.cdCom === focusedCompany)
+                      : []) as unknown as AgRow[]
+                  }
                   getRowId={(data) => String((data as unknown as UserDto).cdUser)}
                   isEditable={false}
                 />
@@ -281,9 +300,11 @@ export const CompanyMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
               <span className="draft-state">{dirty ? "Unsaved" : "Saved"}</span>
             </div>
             <div className="flex-1 min-h-0 overflow-auto">
-              <EnTree<NodeData>
+              <EnTreeView<NodeData>
                 nodes={menuTree}
                 columns={columns}
+                className="en-treeview--matrix"
+                defaultExpandedDepth={2}
                 ariaLabel="Company menu access"
               />
             </div>
@@ -293,6 +314,8 @@ export const CompanyMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
     );
   },
 );
+
+
 
 
 

@@ -1,17 +1,17 @@
-﻿import {
+import {
   forwardRef,
   useCallback,
-  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
   useState,
 } from "react";
 import {
-  EnTree,
-  EnTreeCheck,
-} from "../../../components/controls";
-import type { TreeNode, TreeColumn } from "../../../components/controls";
+  EnTreeView,
+  type TreeNode,
+  type TreeColumn,
+} from "../../../components/tree";
+import { EnTreeCheck } from "../../../components/controls";
 import {
   SearchPanel,
   SearchPanelField,
@@ -51,18 +51,16 @@ function buildTree(rows: MenuRow[]): TreeNode<MenuRow>[] {
 }
 
 /**
- * Role в†” menu matrix (sys_rolemenu) вЂ” mirrors M_SYS_AUT_REG_002.
- * Menu tree rows Г— role checkboxes; toggles write RoleMenuItem rows on save.
+ * Role ↔ menu matrix (sys_rolemenu) — mirrors M_SYS_AUT_REG_002.
+ * Menu tree rows × role checkboxes; toggles write RoleMenuItem rows on save.
  */
 export const RoleMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
   function RoleMenuRegister(_props, ref) {
     const [rows, setRows] = useState<MenuRow[]>([]);
     const [dirty, setDirty] = useState(false);
-    const [busy, setBusy] = useState(false);
     const changed = useRef<Map<string, RoleMenuItem>>(new Map());
 
     const load = useCallback(async () => {
-      setBusy(true);
       try {
         const data = await fnGetDataSet<RoleMenuDto[]>("RoleMenus");
         setRows(data);
@@ -70,22 +68,52 @@ export const RoleMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
         setDirty(false);
       } catch (e) {
         await showEnDialog("error", e instanceof ApiError ? e.message : "Failed to load role menus.");
-      } finally {
-        setBusy(false);
       }
     }, []);
 
-    useEffect(() => {
-      void load();
-    }, [load]);
+    
+/** Menu codes below rootCdMenu (excluding itself), following
+ * cd_menu_parent; cycle-safe so malformed data cannot loop. */
+function collectDescendantIds(rows: MenuRow[], rootCdMenu: string): string[] {
+  const byParent = new Map<string, string[]>();
+  for (const r of rows) {
+    const parent = r.cdMenuParent;
+    if (!parent || parent === r.cdMenu) continue;
+    const list = byParent.get(parent);
+    if (list) list.push(r.cdMenu);
+    else byParent.set(parent, [r.cdMenu]);
+  }
+  const out: string[] = [];
+  const seen = new Set<string>([rootCdMenu]);
+  const stack = [...(byParent.get(rootCdMenu) ?? [])];
+  while (stack.length) {
+    const id = stack.pop()!;
+    if (seen.has(id)) continue;
+    seen.add(id);
+    out.push(id);
+    const kids = byParent.get(id);
+    if (kids) stack.push(...kids);
+  }
+  return out;
+}
 
-    const tree = useMemo(() => buildTree(rows), [rows]);
+const tree = useMemo(() => buildTree(rows), [rows]);
 
     const toggle = useCallback(
       (cdMenu: string, role: (typeof ROLES)[number], checked: boolean) => {
+        // Folder ticks cascade visually over the whole subtree. The backend
+        // mirrors this on save (cascade-on-write), so `changed` keeps only
+        // the toggled row - the backend writes the descendant rows.
+        const isFolder =
+          rows.find((r) => r.cdMenu === cdMenu)?.fgType === "F";
+        const ids = new Set(
+          isFolder
+            ? [cdMenu, ...collectDescendantIds(rows, cdMenu)]
+            : [cdMenu],
+        );
         setRows((current) =>
           current.map((r) =>
-            r.cdMenu === cdMenu ? { ...r, [role.key]: checked } : r,
+            ids.has(r.cdMenu) ? { ...r, [role.key]: checked } : r,
           ),
         );
         changed.current.set(`${role.fg}:${cdMenu}`, {
@@ -95,7 +123,7 @@ export const RoleMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
         });
         setDirty(true);
       },
-      [],
+      [rows],
     );
 
     const columns = useMemo<TreeColumn<MenuRow>[]>(
@@ -107,7 +135,7 @@ export const RoleMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
             node.data ? (
               <EnTreeCheck
                 checked={Boolean(node.data[role.key])}
-                ariaLabel={`${role.label} вЂ” ${node.data.nmMenu}`}
+                ariaLabel={`${role.label} — ${node.data.nmMenu}`}
                 onChange={(c) => toggle(node.data!.cdMenu, role, c)}
               />
             ) : null,
@@ -120,7 +148,6 @@ export const RoleMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
         await showEnDialog("info", "There are no changes to save.");
         return;
       }
-      setBusy(true);
       try {
         const items: RoleMenuItem[] = [...changed.current.values()];
         const res = await fnSave<SaveResponse>("RoleMenus", items);
@@ -130,8 +157,6 @@ export const RoleMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
         await load();
       } catch (e) {
         await showEnDialog("error", e instanceof ApiError ? e.message : "Save failed.");
-      } finally {
-        setBusy(false);
       }
     }, [load]);
 
@@ -161,15 +186,17 @@ export const RoleMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
         <div className="po-detail-panel" style={{ marginTop: 12 }}>
           <div className="form-section-title" style={{ padding: "10px 12px" }}>
             <div>
-              <h2>Role в†” menu access</h2>
-              <p>{busy ? "LoadingвЂ¦" : "Check which roles can open each menu."}</p>
+              <h2>Role ↔ menu access</h2>
+              <p>Check which roles can open each menu.</p>
             </div>
             <span className="draft-state">{dirty ? "Unsaved" : "Saved"}</span>
           </div>
           <div className="flex-1 min-h-0 overflow-auto">
-            <EnTree<MenuRow>
+            <EnTreeView<MenuRow>
               nodes={tree}
               columns={columns}
+              className="en-treeview--matrix"
+              defaultExpandedDepth={2}
               ariaLabel="Menu role matrix"
             />
           </div>
@@ -178,5 +205,6 @@ export const RoleMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
     );
   },
 );
+
 
 

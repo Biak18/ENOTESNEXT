@@ -161,6 +161,49 @@
     color: #64748b;
   }
 
+  /* --- Variant: matrix (permission trees, EN_SYS_AUT_REG_00x) --------------
+     Ports the old EnTree.css presentation: label fills the row so checkbox
+     columns right-align into a readable matrix, sticky header strip. */
+  .en-treeview--matrix {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+    background: #ffffff;
+  }
+  .en-treeview--matrix .en-treeview-list {
+    flex: 1;
+    min-height: 0;
+  }
+  .en-treeview--matrix .en-treeview-row {
+    gap: 4px;
+    border-radius: 3px;
+  }
+  .en-treeview--matrix .en-treeview-cell {
+    justify-content: center;
+    min-width: 40px;
+  }
+  .en-treeview--matrix .en-treeview-head {
+    margin: 0 4px 1px;
+    background: #f0f2fd;
+    border-bottom: 1px solid #dbe3f3;
+    padding: 4px 8px;
+    min-height: 28px;
+    color: #5a6c80;
+    font-weight: 650;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+  /* Label fills the remaining row width so the columns right-align (the
+     checkbox stack was ragged before this — the root readability bug). */
+  .en-treeview--form .en-treeview-label {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
   /* --- Variant: sidebar — preserved original sidebar theme -----------------
      Faithful port of the previous .menu-tree-* rules: right-end rotating
      caret, white-filtered folder SVG, guide lines, identical paddings. */

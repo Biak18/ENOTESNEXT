@@ -1,7 +1,6 @@
 ﻿import {
   forwardRef,
   useCallback,
-  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -14,10 +13,11 @@ import type {
   AgRow,
 } from "../../../components/data-grid/agDataGridTypes";
 import {
-  EnTree,
-  EnTreeCheck,
-} from "../../../components/controls";
-import type { TreeNode, TreeColumn } from "../../../components/controls";
+  EnTreeView,
+  type TreeNode,
+  type TreeColumn,
+} from "../../../components/tree";
+import { EnTreeCheck } from "../../../components/controls";
 import {
   SearchPanel,
   SearchPanelField,
@@ -109,13 +109,11 @@ export const UserMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
     const [tree, setTree] = useState<TreeNode<MenuNodeData>[]>([]);
     const [focusedUser, setFocusedUser] = useState<string | null>(null);
     const [dirty, setDirty] = useState(false);
-    const [busy, setBusy] = useState(false);
     const changed = useRef<Map<string, UserMenuItem>>(new Map());
     const gridRef = useRef<AgDataGridHandle>(null);
 
     const load = useCallback(async () => {
       if (!cdCom) return;
-      setBusy(true);
       try {
         const [userList, menuRows, userMenus] = await Promise.all([
           fnGetDataSet<UserDto[]>("Users"),
@@ -128,14 +126,8 @@ export const UserMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
         setDirty(false);
       } catch (e) {
         await showEnDialog("error", e instanceof ApiError ? e.message : "Failed to load user menus.");
-      } finally {
-        setBusy(false);
       }
     }, [cdCom]);
-
-    useEffect(() => {
-      void load();
-    }, [load]);
 
     const setAction = useCallback(
       (cdMenu: string, action: Action) => {
@@ -217,7 +209,6 @@ export const UserMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
         return;
       }
       if (!cdCom) return;
-      setBusy(true);
       try {
         const res = await callApi<SaveResponse>("UserMenus/save", {
           method: "POST",
@@ -229,8 +220,6 @@ export const UserMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
         await load();
       } catch (e) {
         await showEnDialog("error", e instanceof ApiError ? e.message : "Save failed.");
-      } finally {
-        setBusy(false);
       }
     }, [cdCom, load]);
 
@@ -252,9 +241,7 @@ export const UserMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
         <SearchPanel ariaLabel="User menu permission">
           <SearchPanelField title="User" htmlFor="usermenu-note">
             <span className="px-1 text-xs text-[#8a97a5]">
-              {busy
-                ? "LoadingвЂ¦"
-                : focusedUser
+              {focusedUser
                   ? `Editing ${focusedUser}`
                   : "Select a user to assign menus"}
             </span>
@@ -274,7 +261,11 @@ export const UserMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
                 ref={gridRef}
                 ariaLabel="Users"
                 columnDefs={userColDefs}
-                rowData={users as unknown as AgRow[]}
+                rowData={
+                  (cdCom
+                    ? users.filter((u) => u.cdCom === cdCom)
+                    : []) as unknown as AgRow[]
+                }
                 getRowId={(data) => String((data as unknown as UserDto).cdUser)}
                 onFocusedRowChanged={handleFocusedRow}
                 isEditable={false}
@@ -295,9 +286,11 @@ export const UserMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
               <span className="draft-state">{dirty ? "Unsaved" : "Saved"}</span>
             </div>
             <div className="flex-1 min-h-0 overflow-auto">
-              <EnTree<MenuNodeData>
+              <EnTreeView<MenuNodeData>
                 nodes={tree}
                 columns={columns}
+                className="en-treeview--matrix"
+                defaultExpandedDepth={2}
                 ariaLabel="User menu access"
               />
             </div>

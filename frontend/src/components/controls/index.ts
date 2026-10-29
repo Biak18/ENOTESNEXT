@@ -30,7 +30,6 @@ export { default as EnSearchBtn } from "./EnSearchBtn";
 export { default as EnTab } from "./EnTab";
 export { default as EnTabHeader } from "./EnTabHeader";
 export { default as EnTextBox } from "./EnTextBox";
-export { default as EnTree, EnTreeCheck } from "./EnTree";
-export type { TreeNode, TreeColumn, EnTreeHandle } from "./EnTree";
+export { default as EnTreeCheck } from "./EnTreeCheck";
 
 export type { EnFocusTarget, EnOption, EnValueControlProps } from "./EnControlTypes";
