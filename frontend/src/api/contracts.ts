@@ -95,6 +95,8 @@ export interface UserItem {
   cdUser: string;
   nmUser: string;
   dcPassword: string;
+  /** Sent only for password changes so the backend can verify the current one. */
+  dcOldPassword?: string;
   dtReg: string;
   dcEmail?: string | null;
   dcAddress1?: string | null;

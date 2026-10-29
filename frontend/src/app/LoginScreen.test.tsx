@@ -64,7 +64,8 @@ describe("LoginScreen", () => {
 
   it("uses the shared error dialog for rejected credentials", async () => {
     const user = userEvent.setup();
-    mocks.login.mockRejectedValue(new ApiError("Unauthorized", 401));
+    // The dialog surfaces the actual message sent by the backend.
+    mocks.login.mockRejectedValue(new ApiError("Invalid credentials", 401));
     render(<LoginScreen />);
 
     await user.type(screen.getByLabelText(/Company code/), "ACME");
@@ -75,7 +76,7 @@ describe("LoginScreen", () => {
     await waitFor(() => {
       expect(mocks.showEnDialog).toHaveBeenCalledWith(
         "error",
-        "Invalid company code, user code, or password.",
+        "Invalid credentials",
       );
     });
   });

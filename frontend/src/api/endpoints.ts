@@ -10,10 +10,12 @@ import type {
 
 /** GET /api/v1/Menus?search= → flat menu rows scoped by the JWT's company/role. */
 export function getMenus(search?: string, signal?: AbortSignal) {
+  // Background cache fill (TanStack Query) — no global spinner.
   return apiRequest<MenuDto[]>({
     path: api.v1("Menus"),
     query: { search },
     signal,
+    showSpinner: false,
   });
 }
 

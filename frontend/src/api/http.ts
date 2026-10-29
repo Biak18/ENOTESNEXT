@@ -1,4 +1,5 @@
 import { API_BASE_URL, API_VERSION } from "./config";
+import { popSpinner, pushSpinner } from "../widgets/EnSpinnerService";
 
 const TOKEN_KEY = "enotes.auth.token";
 
@@ -40,6 +41,11 @@ type RequestOptions = {
   /** Send the bearer token. Defaults true. */
   auth?: boolean;
   signal?: AbortSignal;
+  /**
+   * Show the global spinner overlay while this request is in flight
+   * (default true). Set false for background/silent calls.
+   */
+  showSpinner?: boolean;
 };
 
 /**
@@ -54,7 +60,11 @@ export async function apiRequest<T = unknown>({
   query,
   auth = true,
   signal,
+  showSpinner = true,
 }: RequestOptions): Promise<T> {
+  // Global busy overlay: shown automatically while the API call runs, no
+  // per-screen bookkeeping. Counted so parallel calls share one overlay.
+  if (showSpinner) pushSpinner(method === "GET" ? "Loading…" : "Working…");
   const url = new URL(`${API_BASE_URL}${path}`, window.location.origin);
   if (query) {
     for (const [key, value] of Object.entries(query)) {
@@ -71,27 +81,31 @@ export async function apiRequest<T = unknown>({
     if (token) headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(url, {
-    method,
-    headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-    signal,
-  });
+  try {
+    const response = await fetch(url, {
+      method,
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+      signal,
+    });
 
-  if (response.status === 204) return null as T;
+    if (response.status === 204) return null as T;
 
-  const text = await response.text();
-  const data = text ? safeJson(text) : null;
+    const text = await response.text();
+    const data = text ? safeJson(text) : null;
 
-  if (!response.ok) {
-    if (response.status === 401) setToken(null);
-    throw new ApiError(
-      errorMessage(data, response.status),
-      response.status,
-      data,
-    );
+    if (!response.ok) {
+      if (response.status === 401) setToken(null);
+      throw new ApiError(
+        errorMessage(data, response.status),
+        response.status,
+        data,
+      );
+    }
+    return data as T;
+  } finally {
+    if (showSpinner) popSpinner();
   }
-  return data as T;
 }
 
 function safeJson(text: string): unknown {

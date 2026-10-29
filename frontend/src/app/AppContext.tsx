@@ -2,11 +2,11 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { MenuNode } from "../types";
 import { currentUser, signIn, signOut, type AuthUser } from "../api/auth";
 import { getMenus } from "../api/endpoints";
@@ -32,38 +32,28 @@ export function useApp(): AppContextValue {
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(() => currentUser());
-  const [menuItems, setMenuItems] = useState<MenuNode[]>([]);
-  const [screenTitles, setScreenTitles] = useState<Record<string, string>>({});
-  const [loadingMenu, setLoadingMenu] = useState(false);
-  const [apiOnline, setApiOnline] = useState(true);
+  const queryClient = useQueryClient();
 
-  const loadMenu = useCallback(async (signal?: AbortSignal) => {
-    setLoadingMenu(true);
-    try {
-      const rows = await getMenus(undefined, signal);
-      setMenuItems(mapMenuDtoToNodes(rows));
-      setScreenTitles(mapMenuTitles(rows));
-      setApiOnline(true);
-    } catch (error) {
-      // Menu fetch failing (offline/401) shouldn't blank the UI; keep defaults.
-      setApiOnline(false);
-      console.error("Failed to load menu tree:", error);
-    } finally {
-      setLoadingMenu(false);
-    }
-  }, []);
+  // Server state via TanStack Query: cached, deduplicated, retried, and
+  // refetched in the background on refocus. The key includes the company so a
+  // different login always fetches its own tree.
+  const menuQuery = useQuery({
+    queryKey: ["menus", user?.cdCom ?? null],
+    queryFn: ({ signal }) => getMenus(undefined, signal),
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000, // sidebar is fresh for 5 min, no refetch spam
+  });
 
-  // Load the menu tree once a user is authenticated (and reload on login).
-  useEffect(() => {
-    if (!user) {
-      setMenuItems([]);
-      setScreenTitles({});
-      return;
-    }
-    const controller = new AbortController();
-    void loadMenu(controller.signal);
-    return () => controller.abort();
-  }, [user, loadMenu]);
+  const menuItems = useMemo(
+    () => (user && menuQuery.data ? mapMenuDtoToNodes(menuQuery.data) : []),
+    [user, menuQuery.data],
+  );
+  const screenTitles = useMemo(
+    () => (user && menuQuery.data ? mapMenuTitles(menuQuery.data) : {}),
+    [user, menuQuery.data],
+  );
+  const loadingMenu = !!user && menuQuery.isPending;
+  const apiOnline = !user || !menuQuery.isError;
 
   const login = useCallback(
     async (cdCom: string, cdUser: string, password: string) => {
@@ -76,7 +66,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     signOut();
     setUser(null);
-  }, []);
+    // Drop the cached menu so the next login re-fetches cleanly.
+    queryClient.removeQueries({ queryKey: ["menus"] });
+  }, [queryClient]);
 
   const value = useMemo<AppContextValue>(
     () => ({
