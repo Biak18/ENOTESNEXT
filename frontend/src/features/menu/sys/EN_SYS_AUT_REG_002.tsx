@@ -20,7 +20,7 @@ import type { ScreenHandle, ScreenProps } from "../../screen-contract";
 import { fnGetDataSet, fnSave } from "../../../api/endpoints";
 import type { RoleMenuDto, RoleMenuItem, SaveResponse } from "../../../api/contracts";
 import { ApiError } from "../../../api/http";
-import { showEnDialog } from "../../../widgets/EnDialogService";
+import { showEnConfirm, showEnDialog } from "../../../widgets/EnDialogService";
 
 const ROLES = [
   { key: "employee", fg: "0", label: "Employee" },
@@ -142,8 +142,8 @@ export const RoleMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
         save: () => {
           void save();
         },
-        canClose: () =>
-          !dirty || window.confirm("Discard unsaved role-menu changes?"),
+        canClose: async () =>
+          !dirty || (await showEnConfirm("Discard unsaved role-menu changes?")) === true,
       }),
       [dirty, load, save],
     );

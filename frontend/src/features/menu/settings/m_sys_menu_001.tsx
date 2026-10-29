@@ -9,7 +9,7 @@ import TextField from "@mui/material/TextField";
 import ComboBox from "../../../components/controls/Combobox";
 import SearchBox from "../../../components/controls/SearchBox";
 import type { ScreenHandle, ScreenProps } from "../../screen-contract";
-import { showEnDialog } from "../../../widgets/EnDialogService";
+import { showEnConfirm, showEnDialog } from "../../../widgets/EnDialogService";
 import {
   filterMenus,
   initialMenus,
@@ -71,15 +71,13 @@ export const MenuRegister = forwardRef<ScreenHandle, ScreenProps>(
       showEnDialog("info", "New menu details are ready to edit.")
     }, [menus.length]);
 
-    const remove = useCallback(() => {
+    const remove = useCallback(async () => {
       if (!selectedCode) {
         showEnDialog("info", "Select a saved menu entry to delete.")
         return;
       }
       if (
-        !window.confirm(
-          `Delete ${draft.name || "this menu"} from the local demo?`,
-        )
+        !(await showEnConfirm(`Delete ${draft.name || "this menu"} from the local demo?`))
       ) {
         return;
       }
@@ -127,9 +125,9 @@ export const MenuRegister = forwardRef<ScreenHandle, ScreenProps>(
         insert,
         delete: remove,
         save,
-        canClose: () =>
+        canClose: async () =>
           !formDirty ||
-          window.confirm("Discard unsaved changes in this menu draft?"),
+          (await showEnConfirm("Discard unsaved changes in this menu draft?")) === true,
       }),
       [focusSearch, formDirty, insert, remove, save],
     );

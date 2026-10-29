@@ -29,7 +29,7 @@ import type { ScreenHandle, ScreenProps } from "../../screen-contract";
 import { fnGetDataSet, fnSave } from "../../../api/endpoints";
 import type { CompanyDto, CompanyItem, SaveResponse } from "../../../api/contracts";
 import { ApiError } from "../../../api/http";
-import { showEnDialog } from "../../../widgets/EnDialogService";
+import { showEnConfirm, showEnDialog } from "../../../widgets/EnDialogService";
 
 type CompanyRow = CompanyDto & { __new?: boolean; __deleted?: boolean };
 
@@ -192,7 +192,7 @@ export const CompanyRegister = forwardRef<ScreenHandle, ScreenProps>(
       showEnDialog("info", "A new company row was added.");
     }, []);
 
-    const deleteFocused = useCallback(() => {
+    const deleteFocused = useCallback(async () => {
       if (!rows.length) {
         showEnDialog("error", "There are no companies to remove.");
         return;
@@ -202,7 +202,7 @@ export const CompanyRegister = forwardRef<ScreenHandle, ScreenProps>(
       if (!target) return;
       if (
         !target.__new &&
-        !window.confirm(`Delete company ${target.cdCompany} permanently?`)
+        !(await showEnConfirm(`Delete company ${target.cdCompany} permanently?`))
       )
         return;
       setRows((current) => current.filter((_, i) => i !== idx));
@@ -333,8 +333,8 @@ export const CompanyRegister = forwardRef<ScreenHandle, ScreenProps>(
         save: () => {
           void save();
         },
-        canClose: () =>
-          !dirty || window.confirm("Discard unsaved company changes?"),
+        canClose: async () =>
+          !dirty || (await showEnConfirm("Discard unsaved company changes?")) === true,
       }),
       [addRow, deleteFocused, dirty, onSearch, save],
     );

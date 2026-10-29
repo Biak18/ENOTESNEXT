@@ -29,8 +29,9 @@ function WorkspaceApp() {
     return <LoginScreen />;
   }
 
-  const close = (tabId: string) => {
-    if (!canClose(tabId)) return;
+  const close = async (tabId: string) => {
+    // canClose may await the showEnConfirm question dialog.
+    if (!(await canClose(tabId))) return;
     closeTab(tabId, () => true);
     unregister(tabId);
   };

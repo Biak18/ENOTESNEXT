@@ -7,8 +7,13 @@ import {
   useRef,
   useState,
 } from "react";
-import { EnComboBox, EnTextBox, EnTree } from "../../../components/controls";
-import type { EnTreeHandle, TreeNode } from "../../../components/controls";
+import { EnComboBox, EnTextBox } from "../../../components/controls";
+import {
+  EnTreeView,
+  type EnTreeViewHandle,
+  type TreeNode,
+} from "../../../components/tree";
+import { EnSplitter } from "../../../components/splitter";
 import EnSharedForm from "../../../widgets/EnSharedForm";
 import type {
   EnFormField,
@@ -23,7 +28,8 @@ import type { ScreenHandle, ScreenProps } from "../../screen-contract";
 import { fnGetDataSet, fnSave } from "../../../api/endpoints";
 import type { MenuDto, SaveResponse } from "../../../api/contracts";
 import { ApiError } from "../../../api/http";
-import { showEnDialog } from "../../../widgets/EnDialogService";
+import { showEnConfirm, showEnDialog } from "../../../widgets/EnDialogService";
+import { useQueryClient } from "@tanstack/react-query";
 
 const typeOptions = [
   { code: "F", name: "Folder" },
@@ -54,7 +60,7 @@ function buildTree(rows: MenuRow[]): TreeNode<MenuRow>[] {
   for (const r of rows) {
     byId.set(r.cdMenu, {
       id: r.cdMenu,
-      label: `${r.cdMenu} — ${r.nmMenu}`,
+      label: r.nmMenu,
       children: [],
       data: r,
     });
@@ -92,11 +98,11 @@ export const MenuRegisterScreen = forwardRef<ScreenHandle, ScreenProps>(
     const [search, setSearch] = useState("");
     const [focusedId, setFocusedId] = useState<string | null>(null);
     const [dirty, setDirty] = useState(false);
-    const [busy, setBusy] = useState(false);
     const deletedIds = useRef<Set<string>>(new Set());
+    const queryClient = useQueryClient();
     // Codes of saved rows the user edited through the form (→ "U" on save).
     const changedIds = useRef<Set<string>>(new Set());
-    const treeRef = useRef<EnTreeHandle>(null);
+    const treeRef = useRef<EnTreeViewHandle>(null);
 
     const focused = useMemo(
       () => rows.find((r) => r.cdMenu === focusedId) ?? null,
@@ -104,7 +110,6 @@ export const MenuRegisterScreen = forwardRef<ScreenHandle, ScreenProps>(
     );
 
     const load = useCallback(async () => {
-      setBusy(true);
       try {
         const data = await fnGetDataSet<MenuDto[]>(CONTROLLER, {
           search: search || undefined,
@@ -118,8 +123,6 @@ export const MenuRegisterScreen = forwardRef<ScreenHandle, ScreenProps>(
           "error",
           e instanceof ApiError ? e.message : "Failed to load menus.",
         );
-      } finally {
-        setBusy(false);
       }
     }, [search]);
 
@@ -184,15 +187,15 @@ export const MenuRegisterScreen = forwardRef<ScreenHandle, ScreenProps>(
         // Reveal + focus the new node once it's in the rendered tree (the
         // effect above fires after `rows`/`tree` update).
         pendingFocus.current = cd;
-        showEnDialog(
-          "success",
-          `Added ${asChild ? "child menu" : "root folder"} ${cd}.`,
-        );
+        // showEnDialog(
+        //   "success",
+        //   `Added ${asChild ? "child menu" : "root folder"} ${cd}.`,
+        // );
       },
       [focused, rows],
     );
 
-    const deleteFocused = useCallback(() => {
+    const deleteFocused = useCallback(async () => {
       if (!focused) {
         showEnDialog("error", "Select a menu node to remove.");
         return;
@@ -205,14 +208,16 @@ export const MenuRegisterScreen = forwardRef<ScreenHandle, ScreenProps>(
         return;
       }
       if (
-        !window.confirm(`Remove menu "${focused.nmMenu}" (${focused.cdMenu})?`)
+        !(await showEnConfirm(
+          `Remove menu "${focused.nmMenu}" (${focused.cdMenu})?`,
+        ))
       )
         return;
       setRows((current) => current.filter((r) => r.cdMenu !== focused.cdMenu));
       if (!focused.__new) deletedIds.current.add(focused.cdMenu);
       setFocusedId(null);
       setDirty(true);
-      showEnDialog("success", `Menu ${focused.cdMenu} removed.`);
+      // showEnDialog("success", `Menu ${focused.cdMenu} removed.`);
     }, [focused, rows]);
 
     const updateField = useCallback(
@@ -288,7 +293,6 @@ export const MenuRegisterScreen = forwardRef<ScreenHandle, ScreenProps>(
         showEnDialog("success", "No changes to save.");
         return;
       }
-      setBusy(true);
       try {
         const res = await fnSave<SaveResponse>(CONTROLLER, payload);
         // Persisted: drop the local new/changed/deleted markers.
@@ -296,6 +300,8 @@ export const MenuRegisterScreen = forwardRef<ScreenHandle, ScreenProps>(
         setDirty(false);
         changedIds.current.clear();
         deletedIds.current.clear();
+        // Sidebar menu tree is server state — refresh it in the background.
+        void queryClient.invalidateQueries({ queryKey: ["menus"] });
         await showEnDialog(
           "success",
           `Successfully saved ${res.savedCount ?? payload.length} menu row${res.savedCount === 1 ? "" : "s"}.`,
@@ -305,10 +311,8 @@ export const MenuRegisterScreen = forwardRef<ScreenHandle, ScreenProps>(
           "error",
           e instanceof ApiError ? e.message : "Save failed.",
         );
-      } finally {
-        setBusy(false);
       }
-    }, [rows]);
+    }, [rows, queryClient]);
 
     // Folders the focused row can sit under — excludes itself and its own
     // descendants so you can't make a folder its own ancestor.
@@ -362,12 +366,14 @@ export const MenuRegisterScreen = forwardRef<ScreenHandle, ScreenProps>(
     );
     const formRef = useRef<EnFormHandle>(null);
 
+    // The detail form is always mounted (no empty placeholder); it binds the
+    // focused row and resets to blank when the focus is cleared.
     useEffect(() => {
-      if (focused) {
-        formRef.current?.setFormData(
-          toMenuDto(focused) as unknown as Record<string, EnFormValue>,
-        );
-      }
+      formRef.current?.setFormData(
+        focused
+          ? (toMenuDto(focused) as unknown as Record<string, EnFormValue>)
+          : {},
+      );
     }, [focused]);
 
     const handleFormValueChanged = useCallback(
@@ -393,14 +399,14 @@ export const MenuRegisterScreen = forwardRef<ScreenHandle, ScreenProps>(
         save: () => {
           void save();
         },
-        canClose: () =>
-          !dirty || window.confirm("Discard unsaved menu changes?"),
+        canClose: async () =>
+          !dirty || (await showEnConfirm("Discard unsaved menu changes?")) === true,
       }),
       [deleteFocused, dirty, insert, onSearch, save],
     );
 
     return (
-      <div className="feature-screen po-prototype">
+      <div className="feature-screen po-prototype bg-white">
         <SearchPanel ariaLabel="Menu search conditions">
           <SearchPanelField title="Menu name" htmlFor="menu-search">
             <EnTextBox
@@ -421,79 +427,69 @@ export const MenuRegisterScreen = forwardRef<ScreenHandle, ScreenProps>(
           </SearchPanelField>
         </SearchPanel>
 
-        <div className="flex min-h-0 flex-1 gap-3 pt-3">
-          <div className="po-detail-panel" style={{ width: "55%" }}>
-            <div
-              className="form-section-title"
-              style={{ padding: "10px 12px" }}
-            >
-              <div>
-                <h2>Menu tree</h2>
-                <p>Select a node to edit; folders group screens.</p>
-              </div>
-            </div>
-            <div className="flex-1 min-h-0 overflow-auto">
-              {busy && (
-                <p className="px-3 py-2 text-xs text-[#8a97a5]">Loading…</p>
-              )}
-              <EnTree<MenuRow>
-                ref={treeRef}
-                nodes={tree}
-                ariaLabel="Menu hierarchy"
-                selectedId={focusedId}
-                onSelect={(node) => setFocusedId(node.id)}
-                columns={[
-                  {
-                    header: "Type",
-                    width: 56,
-                    render: (node) => (
-                      <span
-                        style={{
-                          fontSize: 10,
-                          fontWeight: 650,
-                          color:
-                            node.data?.fgType === "F" ? "#5a7bd4" : "#47866e",
-                        }}
-                      >
-                        {node.data?.fgType === "F" ? "Folder" : "Menu"}
-                      </span>
-                    ),
-                  },
-                ]}
-              />
-            </div>
-          </div>
-
-          <section
-            className="po-detail-panel"
-            aria-label="Menu detail"
-            style={{ width: "45%" }}
+        <div className="flex min-h-0 flex-1 pt-3">
+          <EnSplitter
+            orientation="vertical"
+            initial={55}
+            min={25}
+            max={75}
+            className="min-h-0 flex-1"
           >
-            <div className="form-section-title">
-              <div>
-                <h2>Menu detail</h2>
-                <p>
-                  {focused
-                    ? `Editing ${focused.cdMenu}`
-                    : "Select a menu node to edit."}
-                </p>
+            {/* Pane 1 — tree */}
+            <div
+              className="flex min-h-0 flex-1 flex-col"
+              style={{
+                background: "#ffffff",
+                borderRadius: 4,
+                overflow: "hidden",
+                padding: "4px 4px 8px",
+              }}
+            >
+              <div className="min-h-0 flex-1 overflow-auto">
+                <EnTreeView<MenuRow>
+                  ref={treeRef}
+                  nodes={tree}
+                  variant="form"
+                  defaultExpandedDepth={1}
+                  ariaLabel="Menu hierarchy"
+                  selectedId={focusedId}
+                  onSelect={(node) => setFocusedId(node.id)}
+                />
               </div>
-              <span className="draft-state">{dirty ? "Unsaved" : "Saved"}</span>
             </div>
-            {focused ? (
-              <EnSharedForm
-                ref={formRef}
-                fields={formFields}
-                columns={2}
-                onValueChanged={handleFormValueChanged}
-              />
-            ) : (
-              <div className="empty-result" style={{ flex: 1 }}>
-                <strong>No menu selected</strong>
-                <p>Click a node in the tree to view and edit it.</p>
+
+            {/* Pane 2 — detail (shared form is always visible) */}
+            <section
+              aria-label="Menu detail"
+              style={{
+                background: "#ffffff",
+                borderRadius: 4,
+                overflow: "hidden",
+              }}
+            >
+              {/* Slim status strip — keeps the badge clear of form fields. */}
+              <div
+                style={{
+                  flex: "none",
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  padding: "8px 12px 0",
+                }}
+              >
+                <span className="draft-state">
+                  {dirty ? "Unsaved" : "Saved"}
+                </span>
               </div>
-            )}
-          </section>
+              <div className="min-h-0 min-w-0 flex-1 overflow-auto">
+                <EnSharedForm
+                  ref={formRef}
+                  fields={formFields}
+                  columns={2}
+                  onValueChanged={handleFormValueChanged}
+                />
+              </div>
+            </section>
+          </EnSplitter>
         </div>
       </div>
     );

@@ -24,7 +24,7 @@ import type { ScreenHandle, ScreenProps } from "../../screen-contract";
 import { fnGetDataSet, fnSave } from "../../../api/endpoints";
 import type { SaveResponse, UserDto, UserItem } from "../../../api/contracts";
 import { ApiError } from "../../../api/http";
-import { showEnDialog } from "../../../widgets/EnDialogService";
+import { showEnConfirm, showEnDialog } from "../../../widgets/EnDialogService";
 import EnCommonModal from "../../../widgets/EnCommonModal";
 import { useApp } from "../../../app/AppContext";
 
@@ -355,7 +355,7 @@ export const UserRegister = forwardRef<ScreenHandle, ScreenProps>(
       } finally {
         setBusy(false);
       }
-    }, [pwdModal, newPassword, rows, load]);
+    }, [pwdModal, newPassword, oldPassword, rows, load]);
 
     useImperativeHandle(
       ref,
@@ -366,8 +366,8 @@ export const UserRegister = forwardRef<ScreenHandle, ScreenProps>(
         save: () => {
           void save();
         },
-        canClose: () =>
-          !dirty || window.confirm("Discard unsaved user changes?"),
+        canClose: async () =>
+          !dirty || (await showEnConfirm("Discard unsaved user changes?")) === true,
       }),
       [addRow, deleteFocused, dirty, onSearch, save],
     );

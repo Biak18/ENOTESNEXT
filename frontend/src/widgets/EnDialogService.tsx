@@ -68,3 +68,28 @@ export function showEnPopupModal(
     );
   });
 }
+
+
+/** Buttons layout for a question/confirmation dialog. */
+export type EnConfirmButtons = "yesNo" | "yesNoCancel";
+export type EnConfirmResult = true | false | undefined; // Yes | No | Cancel/closed
+
+/**
+ * Question dialog (SNOTES SnQuestionBox): Yes/No — optionally with Cancel.
+ * Resolves true for Yes, false for No, undefined for Cancel/backdrop-close,
+ * so callers that only care about Yes/No can just check truthiness while
+ * Cancel stays distinguishable when needed.
+ */
+export function showEnConfirm(
+  message: string,
+  options?: {
+    title?: string;
+    buttons?: EnConfirmButtons; // default "yesNo"
+  },
+): Promise<EnConfirmResult> {
+  return showEnDialog(
+    (options?.buttons ?? "yesNo") === "yesNoCancel" ? "confirmCancel" : "confirm",
+    message,
+    options?.title,
+  );
+}

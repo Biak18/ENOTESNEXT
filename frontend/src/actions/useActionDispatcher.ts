@@ -28,8 +28,8 @@ export function useActionDispatcher() {
     if (handler) void handler();
   }, []);
 
-  const canClose = useCallback((tabId: string) => {
-    return handles.current[tabId]?.canClose?.() ?? true;
+  const canClose = useCallback(async (tabId: string) => {
+    return (await handles.current[tabId]?.canClose?.()) ?? true;
   }, []);
 
   const unregister = useCallback((tabId: string) => {

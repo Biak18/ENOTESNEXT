@@ -33,7 +33,7 @@ import type {
   UserDto,
 } from "../../../api/contracts";
 import { ApiError } from "../../../api/http";
-import { showEnDialog } from "../../../widgets/EnDialogService";
+import { showEnConfirm, showEnDialog } from "../../../widgets/EnDialogService";
 
 const companyColDefs: AgColDef[] = [
   { field: "cdCompany", headerName: "COMPANY", width: 100 },
@@ -213,8 +213,8 @@ export const CompanyMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
         save: () => {
           void save();
         },
-        canClose: () =>
-          !dirty || window.confirm("Discard unsaved company-menu changes?"),
+        canClose: async () =>
+          !dirty || (await showEnConfirm("Discard unsaved company-menu changes?")) === true,
       }),
       [dirty, load, save],
     );

@@ -26,7 +26,7 @@ import {
   SearchPanelField,
 } from "../../../components/search-panel";
 import type { ScreenHandle, ScreenProps } from "../../screen-contract";
-import { showEnDialog } from "../../../widgets/EnDialogService";
+import { showEnConfirm, showEnDialog } from "../../../widgets/EnDialogService";
 import {
   cdBizOptions,
   cdIoOptions,
@@ -281,8 +281,8 @@ export const PurchaseOrderTypeRegister = forwardRef<ScreenHandle, ScreenProps>(
         insert: addRow,
         delete: deleteFocused,
         save,
-        canClose: () =>
-          !dirty || window.confirm("Discard unsaved order type changes?"),
+        canClose: async () =>
+          !dirty || (await showEnConfirm("Discard unsaved order type changes?")) === true,
       }),
       [addRow, deleteFocused, dirty, focusSearch, save],
     );

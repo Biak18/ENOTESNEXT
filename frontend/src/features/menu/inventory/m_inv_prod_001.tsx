@@ -23,7 +23,7 @@ import {
   SearchPanelField,
 } from "../../../components/search-panel";
 import type { ScreenHandle, ScreenProps } from "../../screen-contract";
-import { showEnDialog } from "../../../widgets/EnDialogService";
+import { showEnConfirm, showEnDialog } from "../../../widgets/EnDialogService";
 import {
   createProduct,
   filterProducts,
@@ -155,7 +155,7 @@ export const ProductsScreen = forwardRef<ScreenHandle, ScreenProps>(
       showEnDialog("info", "A product row was added to this local list.")
     }, []);
 
-    const deleteFocusedRow = useCallback(() => {
+    const deleteFocusedRow = useCallback(async () => {
       if (!products.length) {
         showEnDialog("info", "There are no products to remove.")
         return;
@@ -167,9 +167,9 @@ export const ProductsScreen = forwardRef<ScreenHandle, ScreenProps>(
       if (!targetId) return;
       const target = products.find((row) => row.id === targetId);
       if (
-        !window.confirm(
+        !(await showEnConfirm(
           `Delete ${target?.name || "the focused product"} from this local demo?`,
-        )
+        ))
       ) {
         return;
       }
@@ -254,9 +254,9 @@ export const ProductsScreen = forwardRef<ScreenHandle, ScreenProps>(
         excel: () => {
           void exportExcel();
         },
-        canClose: () =>
+        canClose: async () =>
           !dirty ||
-          window.confirm("Discard unsaved changes in this products list?"),
+          (await showEnConfirm("Discard unsaved changes in this products list?")) === true,
       }),
       [addRow, deleteFocusedRow, dirty, exportExcel, focusSearch, save],
     );

@@ -2,7 +2,8 @@
 import type { Action, ScreenKey } from "../types";
 
 export type ScreenHandle = Partial<Record<Action, () => void>> & {
-  canClose?: () => boolean;
+  /** May present the asynchronous En confirm dialog — return false to keep the tab. */
+  canClose?: () => boolean | Promise<boolean>;
 };
 
 export type ScreenProps = {

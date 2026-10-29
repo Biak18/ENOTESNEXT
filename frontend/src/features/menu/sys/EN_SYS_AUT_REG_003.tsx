@@ -32,7 +32,7 @@ import type {
   UserMenuItem,
 } from "../../../api/contracts";
 import { ApiError } from "../../../api/http";
-import { showEnDialog } from "../../../widgets/EnDialogService";
+import { showEnConfirm, showEnDialog } from "../../../widgets/EnDialogService";
 import { useApp } from "../../../app/AppContext";
 
 const roleNames: Record<string, string> = {
@@ -241,8 +241,8 @@ export const UserMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
         save: () => {
           void save();
         },
-        canClose: () =>
-          !dirty || window.confirm("Discard unsaved user-menu changes?"),
+        canClose: async () =>
+          !dirty || (await showEnConfirm("Discard unsaved user-menu changes?")) === true,
       }),
       [dirty, load, save],
     );

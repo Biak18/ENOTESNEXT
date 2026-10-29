@@ -1,6 +1,6 @@
 ﻿import { forwardRef, useImperativeHandle, useMemo, useRef, useState } from "react";
 import type { ScreenProps, ScreenHandle } from "./screen-contract";
-import { showEnDialog } from "../widgets/EnDialogService";
+import { showEnConfirm, showEnDialog } from "../widgets/EnDialogService";
 import type { ScreenKey } from "../types";
 
 
@@ -50,7 +50,7 @@ export const ScreenContent = forwardRef<ScreenHandle, ScreenProps>(function Scre
 
   useImperativeHandle(ref, () => {
     const handlers = {
-      canClose: () => !formDirty || window.confirm("Discard unsaved changes in this local draft?"),
+      canClose: async () => !formDirty || (await showEnConfirm("Discard unsaved changes in this local draft?")) === true,
     } as ScreenHandle;
     if (screen !== "dashboard") {
       handlers.search = () => { searchRef.current?.focus(); notify(`Search ${tabTitle} by name, code, or reference.`); };
@@ -76,15 +76,15 @@ export const ScreenContent = forwardRef<ScreenHandle, ScreenProps>(function Scre
     }
     if (screen === "products") {
       handlers.insert = () => { const code = `ITM-${String(1001 + products.length).padStart(4, "0")}`; setProducts((items) => [...items, { code, name: "New demo item", group: "Uncategorized", unit: "Each", price: 0, qty: 0 }]); notify("A sample item was added to this tab."); };
-      handlers.delete = () => { if (!selectedProducts.length) { notify("Select one or more items to delete."); return; } if (!window.confirm(`Delete ${selectedProducts.length} selected item(s) from this local demo?`)) return; setProducts((items) => items.filter((item) => !selectedProducts.includes(item.code))); setSelectedProducts([]); notify("Selected demo items deleted locally."); };
+      handlers.delete = async () => { if (!selectedProducts.length) { notify("Select one or more items to delete."); return; } if (!(await showEnConfirm(`Delete ${selectedProducts.length} selected item(s) from this local demo?`))) return; setProducts((items) => items.filter((item) => !selectedProducts.includes(item.code))); setSelectedProducts([]); notify("Selected demo items deleted locally."); };
     }
     if (screen === "sales") {
       handlers.insert = () => { setVendor(""); setReference(""); setLines([]); setFormDirty(false); notify(`A new ${tabTitle.toLowerCase()} draft is ready.`); };
-      handlers.delete = () => { if (!window.confirm(`Clear this ${tabTitle.toLowerCase()} draft?`)) return; setVendor(""); setReference(""); setLines([]); setFormDirty(false); notify("Draft cleared locally."); };
+      handlers.delete = async () => { if (!(await showEnConfirm(`Clear this ${tabTitle.toLowerCase()} draft?`))) return; setVendor(""); setReference(""); setLines([]); setFormDirty(false); notify("Draft cleared locally."); };
     }
     if (screen === "menus") {
       handlers.insert = () => { const draft = { code: `MN-${String(50 + menus.length).padStart(3, "0")}`, name: "", type: "Screen", module: "General", parent: "?", dll: "" }; setMenuDraft(draft); setSelectedMenuCode(""); setFormDirty(false); notify("New menu details are ready to edit."); };
-      handlers.delete = () => { if (!selectedMenuCode) { notify("Select a saved menu entry to delete."); return; } if (!window.confirm(`Delete ${menuDraft.name || "this menu"} from the local demo?`)) return; const remaining = menus.filter((item) => item.code !== selectedMenuCode); setMenus(remaining); const next = remaining[0]; if (next) { setSelectedMenuCode(next.code); setMenuDraft(next); } notify("Menu entry deleted from local demo data."); };
+      handlers.delete = async () => { if (!selectedMenuCode) { notify("Select a saved menu entry to delete."); return; } if (!(await showEnConfirm(`Delete ${menuDraft.name || "this menu"} from the local demo?`))) return; const remaining = menus.filter((item) => item.code !== selectedMenuCode); setMenus(remaining); const next = remaining[0]; if (next) { setSelectedMenuCode(next.code); setMenuDraft(next); } notify("Menu entry deleted from local demo data."); };
     }
     return handlers;
   }, [screen, tabTitle, notify, products.length, selectedProducts, vendor, lines, menuDraft, formDirty, selectedMenuCode, menus]);

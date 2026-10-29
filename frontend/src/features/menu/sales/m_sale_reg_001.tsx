@@ -24,7 +24,7 @@ import {
 } from "../../../components/search-panel";
 import PeriodBox from "../../../components/controls/PeriodBox";
 import type { ScreenHandle, ScreenProps } from "../../screen-contract";
-import { showEnDialog } from "../../../widgets/EnDialogService";
+import { showEnConfirm, showEnDialog } from "../../../widgets/EnDialogService";
 import {
   buildExportSheet,
   createLine,
@@ -222,8 +222,8 @@ export const SalesRegistration = forwardRef<ScreenHandle, ScreenProps>(
       showEnDialog("info", "A new sales invoice draft is ready in this tab.");
     }, []);
 
-    const clearDraft = useCallback(() => {
-      if (!window.confirm("Clear this sales invoice draft?")) return;
+    const clearDraft = useCallback(async () => {
+      if (!(await showEnConfirm("Clear this sales invoice draft?"))) return;
       setLines([]);
       setDraft((current) => ({ ...current, customer: "", reference: "" }));
       setInvalidCell(null);
@@ -299,9 +299,9 @@ export const SalesRegistration = forwardRef<ScreenHandle, ScreenProps>(
         excel: () => {
           void exportExcel();
         },
-        canClose: () =>
+        canClose: async () =>
           !dirty ||
-          window.confirm("Discard unsaved changes in this sales invoice draft?"),
+          (await showEnConfirm("Discard unsaved changes in this sales invoice draft?")) === true,
       }),
       [clearDraft, dirty, exportExcel, focusSearch, resetDraft, save],
     );

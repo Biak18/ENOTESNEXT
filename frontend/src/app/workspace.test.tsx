@@ -85,9 +85,9 @@ function Harness() {
       </button>
       <button
         type="button"
-        onClick={() => {
+        onClick={async () => {
           if (!activeTab) return;
-          if (!canClose(activeTab.id)) return;
+          if (!(await canClose(activeTab.id))) return;
           closeTab(activeTab.id, () => true);
           unregister(activeTab.id);
         }}
