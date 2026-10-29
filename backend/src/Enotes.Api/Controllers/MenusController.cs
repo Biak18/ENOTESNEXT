@@ -1,5 +1,6 @@
 using Enotes.Application.Features.Menu.DeleteMenu;
 using Enotes.Application.Features.Menu.GetMenus;
+using Enotes.Application.Features.Menu.GetMyMenus;
 using Enotes.Application.Features.Menu.SaveMenu;
 using Enotes.Application.Features.Menu.UpdateMenu;
 using MediatR;
@@ -27,6 +28,17 @@ public class MenusController : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>
+    /// Grant-aware menu tree for the navigation sidebar (ap_enotes_001_s):
+    /// filters by the JWT caller's company, user overrides, and role.
+    /// </summary>
+    [HttpGet("my")]
+    public async Task<IActionResult> GetMy(string? search, CancellationToken cancellationToken)
+    {
+        var query = new GetMyMenusQuery(search);
+        var result = await _sender.Send(query, cancellationToken);
+        return Ok(result);
+    }
     [HttpPut("{cdMenu}")]
     public async Task<IActionResult> Update(string cdMenu, [FromBody] UpdateMenuCommand command, CancellationToken cancellationToken)
     {
@@ -52,3 +64,4 @@ public class MenusController : ControllerBase
         return Ok(result);
     }
 }
+

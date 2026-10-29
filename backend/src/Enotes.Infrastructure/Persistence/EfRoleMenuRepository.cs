@@ -43,6 +43,65 @@ public sealed class EfRoleMenuRepository(AppDbContext dbContext) : IRoleMenuRepo
             .ContinueWith(t => (IEnumerable<RoleMenuWithRolesDto>)t.Result, cancellationToken);
     }
 
+    public async Task<IReadOnlyCollection<string>> GetAssignedMenuCodesAsync(
+        string fgRole,
+        CancellationToken cancellationToken = default)
+    {
+        var codes = await dbContext.RoleMenus
+            .Where(x => x.FgRole == fgRole)
+            .Select(x => x.CdMenu)
+            .ToListAsync(cancellationToken);
+
+        return codes;
+    }
+
+    public Task AddRangeAsync(
+        string fgRole,
+        IEnumerable<string> cdMenus,
+        CancellationToken cancellationToken = default)
+    {
+        foreach (var cdMenu in cdMenus)
+        {
+            dbContext.RoleMenus.Add(SysRoleMenu.Create(fgRole, cdMenu));
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public async Task<int> RemoveRangeAsync(
+        string fgRole,
+        IEnumerable<string> cdMenus,
+        CancellationToken cancellationToken = default)
+    {
+        var codes = cdMenus.ToList();
+        if (codes.Count == 0) return 0;
+
+        var removed = 0;
+
+        // Rows added earlier in the same still-pending save: untrack them.
+        // (EF removes them from the insert set instead of issuing a delete.)
+        foreach (var added in dbContext.RoleMenus.Local
+                     .Where(x => x.FgRole == fgRole && codes.Contains(x.CdMenu))
+                     .ToList())
+        {
+            dbContext.RoleMenus.Remove(added);
+            removed++;
+        }
+
+        // Rows persisted in the DB: delete them in a single query.
+        var existing = await dbContext.RoleMenus
+            .Where(x => x.FgRole == fgRole && codes.Contains(x.CdMenu))
+            .ToListAsync(cancellationToken);
+
+        foreach (var entity in existing)
+        {
+            dbContext.RoleMenus.Remove(entity);
+            removed++;
+        }
+
+        return removed;
+    }
+
     public Task<bool> ExistsAsync(
         string fgRole,
         string cdMenu,

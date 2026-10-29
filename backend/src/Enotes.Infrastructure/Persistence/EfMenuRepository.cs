@@ -13,6 +13,14 @@ public sealed class EfMenuRepository(AppDbContext dbContext) : IMenuRepository
         Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
     }
 
+    public async Task<IReadOnlyList<MenuHierarchyItemDto>> GetMenuHierarchyAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Menus
+            .Select(m => new MenuHierarchyItemDto(m.CdMenu, m.FgType, m.CdMenuParent))
+            .ToListAsync(cancellationToken);
+    }
+
     public Task<IEnumerable<SysMenu>> GetAllAsync(string? searchTerm, CancellationToken cancellationToken = default)
     {
         var query = dbContext.Menus.AsQueryable();
@@ -42,6 +50,31 @@ public sealed class EfMenuRepository(AppDbContext dbContext) : IMenuRepository
         return result;
     }
 
+    public async Task<IEnumerable<MenuTreeItemDto>> GetAuthorizedMenuTreeAsync(
+        string? searchTerm,
+        string cdCompany,
+        string cdUser,
+        string fgRole,
+        CancellationToken cancellationToken = default)
+    {
+        var connection = dbContext.Database.GetDbConnection();
+
+        var parameters = new
+        {
+            p_cd_menu = (string?)null,
+            p_nm_menu = searchTerm,
+            p_search = (string?)null,
+            p_cd_company = cdCompany,
+            p_cd_user = cdUser,
+            p_fg_role = fgRole,
+        };
+
+        var result = await connection.QueryAsync<MenuTreeItemDto>(
+            "SELECT * FROM public.ap_enotes_001_s(@p_cd_menu, @p_nm_menu, @p_search, @p_cd_company, @p_cd_user, @p_fg_role)",
+            parameters);
+
+        return result;
+    }
     public Task<SysMenu?> GetByIdAsync(string cdMenu, CancellationToken cancellationToken = default)
     {
         return dbContext.Menus.FirstOrDefaultAsync(x => x.CdMenu == cdMenu, cancellationToken);
@@ -73,3 +106,6 @@ public sealed class EfMenuRepository(AppDbContext dbContext) : IMenuRepository
         return dbContext.SaveChangesAsync(cancellationToken);
     }
 }
+
+
+

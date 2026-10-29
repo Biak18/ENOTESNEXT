@@ -6,40 +6,86 @@ namespace Enotes.Infrastructure.Persistence;
 
 public sealed class EfCompanyMenuRepository(AppDbContext dbContext) : ICompanyMenuRepository
 {
-    public Task<IEnumerable<CompanyMenuAssignmentDto>> GetAllByCompanyAsync(
+    public async Task<IEnumerable<CompanyMenuAssignmentDto>> GetAllByCompanyAsync(
         string cdCompany,
         CancellationToken cancellationToken = default)
     {
-        var assignedMenus = dbContext.CompanyMenus
+        // Folder cascading happens on write, so a plain row-presence read is
+        // enough: granted descendants have their own sys_companymenu rows.
+        var assignedMenus = (await dbContext.CompanyMenus
             .Where(x => x.CdCompany == cdCompany)
             .Select(x => x.CdMenu)
+            .ToListAsync(cancellationToken))
             .ToHashSet();
 
-        var query = from m in dbContext.Menus
-                    select new CompanyMenuAssignmentDto(
-                        cdCompany,
-                        m.CdMenu,
-                        m.NmMenu,
-                        assignedMenus.Contains(m.CdMenu));
+        var rows = await dbContext.Menus
+            .Select(m => new CompanyMenuAssignmentDto(
+                cdCompany,
+                m.CdMenu,
+                m.NmMenu,
+                assignedMenus.Contains(m.CdMenu)))
+            .ToListAsync(cancellationToken);
 
-        return query.ToListAsync(cancellationToken)
-            .ContinueWith(t => (IEnumerable<CompanyMenuAssignmentDto>)t.Result, cancellationToken);
+        return rows;
     }
 
-    public Task UnassignAllAsync(
+    public async Task<IReadOnlyCollection<string>> GetAssignedMenuCodesAsync(
         string cdCompany,
         CancellationToken cancellationToken = default)
     {
-        var entities = dbContext.CompanyMenus
+        var codes = await dbContext.CompanyMenus
             .Where(x => x.CdCompany == cdCompany)
-            .ToList();
+            .Select(x => x.CdMenu)
+            .ToListAsync(cancellationToken);
 
-        foreach (var entity in entities)
+        return codes;
+    }
+
+    public Task AddRangeAsync(
+        string cdCompany,
+        IEnumerable<string> cdMenus,
+        CancellationToken cancellationToken = default)
+    {
+        foreach (var cdMenu in cdMenus)
         {
-            dbContext.CompanyMenus.Remove(entity);
+            dbContext.CompanyMenus.Add(SysCompanyMenu.Create(cdCompany, cdMenu));
         }
 
         return Task.CompletedTask;
+    }
+
+    public async Task<int> RemoveRangeAsync(
+        string cdCompany,
+        IEnumerable<string> cdMenus,
+        CancellationToken cancellationToken = default)
+    {
+        var codes = cdMenus.ToList();
+        if (codes.Count == 0) return 0;
+
+        var removed = 0;
+
+        // Rows added earlier in the same still-pending save: untrack them.
+        // (EF removes them from the insert set instead of issuing a delete.)
+        foreach (var added in dbContext.CompanyMenus.Local
+                     .Where(x => x.CdCompany == cdCompany && codes.Contains(x.CdMenu))
+                     .ToList())
+        {
+            dbContext.CompanyMenus.Remove(added);
+            removed++;
+        }
+
+        // Rows persisted in the DB: delete them in a single query.
+        var existing = await dbContext.CompanyMenus
+            .Where(x => x.CdCompany == cdCompany && codes.Contains(x.CdMenu))
+            .ToListAsync(cancellationToken);
+
+        foreach (var entity in existing)
+        {
+            dbContext.CompanyMenus.Remove(entity);
+            removed++;
+        }
+
+        return removed;
     }
 
     public async Task AssignAsync(
