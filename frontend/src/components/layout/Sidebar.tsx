@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Resizable } from "re-resizable";
 import { MenuTree } from "../MenuTree";
 import type { MenuNode } from "../../types";
@@ -24,8 +23,6 @@ export function Sidebar({
   loading?: boolean;
   apiOnline?: boolean;
 }) {
-  const [expanded, setExpanded] = useState<string[]>([]);
-
   return (
     <Resizable
       size={{ width: collapsed ? 0 : width, height: "100%" }}
@@ -56,8 +53,6 @@ export function Sidebar({
           ) : (
             <MenuTree
               items={menuItems}
-              expanded={expanded}
-              setExpanded={setExpanded}
               activeId={activeMenuId}
               query={query}
               openScreen={openMenu}

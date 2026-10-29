@@ -1,0 +1,256 @@
+/*
+ * Global tree (EnTreeView) — shared row structure, two visual variants.
+ * "form"    → light tree grid with columns (EN_SYS_MENU_REG_001, etc.)
+ * "sidebar" → navy navigation tree (MenuTree in the app sidebar)
+ */
+@layer components {
+  /* Sidebar scroll container (Sidebar.tsx keeps the .menu-tree class). */
+  .menu-tree {
+    flex: 1;
+    min-height: 0;
+    padding: 0 7px 12px;
+    overflow-y: auto;
+  }
+  @media (width <= 680px) {
+    .menu-tree {
+      padding: 8px 5px;
+    }
+  }
+
+  .en-treeview {
+    min-width: 0;
+    overflow-x: hidden;
+  }
+  .en-treeview-list {
+    min-width: 0;
+  }
+
+  /* --- Shared row anatomy ------------------------------------------------- */
+  .en-treeview-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-right: 8px;
+    width: 100%;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    border: 0;
+    background: transparent;
+    position: relative;
+    transition: background 120ms ease, color 120ms ease, box-shadow 120ms ease;
+  }
+  .en-treeview-row:focus-visible {
+    z-index: 1;
+    box-shadow: inset 0 0 0 2px var(--royal, #0056ff);
+    outline: none;
+  }
+
+  .en-treeview-toggle {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    width: 15px;
+    height: 15px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    color: inherit;
+    border-radius: 3px;
+  }
+  /* Leaf placeholders stay invisible (alignment only). */
+  .en-treeview-toggle.is-leaf {
+    visibility: hidden;
+  }
+  .en-treeview-row .en-treeview-caret {
+    transition: transform 140ms ease;
+  }
+  .en-treeview-row .en-treeview-caret.is-open {
+    transform: rotate(90deg);
+  }
+
+  .en-treeview-icon {
+    flex: none;
+  }
+  .en-treeview-icon.is-hidden {
+    display: none;
+  }
+  .en-treeview-icon-leaf {
+    opacity: 0.8;
+  }
+
+  .en-treeview-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  .en-treeview-label mark {
+    background: rgba(255, 209, 102, 0.35);
+    padding: 0 1px;
+    border-radius: 2px;
+    color: inherit;
+  }
+
+  .en-treeview-cell {
+    display: inline-flex;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .en-treeview-head {
+    display: flex;
+    align-items: center;
+    padding-right: 8px;
+  }
+  .en-treeview-head .en-treeview-toggle {
+    visibility: hidden;
+  }
+  .en-treeview-head-cell,
+  button.en-treeview-toggle + .en-treeview-icon.en-treeview-icon-leaf + .en-treeview-head-label,
+  .en-treeview-head-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+  }
+
+  /* --- Variant: form (light tree grid, EN_SYS_MENU_REG_001) --------------- */
+  .en-treeview--form {
+    color: #2a3552;
+    font-size: 13px;
+  }
+  .en-treeview--form .en-treeview-row {
+    border-radius: 4px;
+    margin: 1px 4px;
+    /* Rows fill their container minus their own margins — without this they
+       overflow by 8px and force a needless horizontal scrollbar. */
+    width: calc(100% - 8px);
+  }
+  .en-treeview--form .en-treeview-row:hover {
+    background: #eef3fe;
+  }
+  .en-treeview--form .en-treeview-icon {
+    color: #7d90c9;
+  }
+  .en-treeview--form .en-treeview-icon-leaf {
+    color: #8ba3c9;
+  }
+  .en-treeview--form .en-treeview-folder .en-treeview-label {
+    font-weight: 650;
+    color: #22315c;
+  }
+  .en-treeview--form .en-treeview-row.is-selected {
+    background: #e7efff;
+    box-shadow: inset 2px 0 0 var(--royal, #0056ff);
+  }
+  .en-treeview--form .en-treeview-row.is-branch .en-treeview-label {
+    color: #22315c;
+  }
+  .en-treeview--form .en-treeview-caret {
+    color: #7d90c9;
+  }
+  .en-treeview--form .en-treeview-row.is-selected .en-treeview-caret,
+  .en-treeview--form .en-treeview-row.is-selected .en-treeview-icon {
+    color: var(--royal, #0056ff);
+  }
+  .en-treeview--form .en-treeview-head {
+    margin: 0 4px;
+    border-bottom: 1px solid #e2e8f6;
+    color: #64748b;
+  }
+
+  /* --- Variant: sidebar — preserved original sidebar theme -----------------
+     Faithful port of the previous .menu-tree-* rules: right-end rotating
+     caret, white-filtered folder SVG, guide lines, identical paddings. */
+  .en-treeview--sidebar {
+    color: #cdd6f2;
+    font-size: 13px;
+  }
+  .en-treeview--sidebar .en-treeview-row {
+    gap: 7px;
+    padding-right: 8px;
+    border-radius: 4px;
+    margin: 1px 6px 1px 4px;
+    width: calc(100% - 10px);
+    color: #cdd6f2;
+    line-height: 29px;
+    cursor: pointer;
+    border-left: 2px solid transparent;
+    transition: background 100ms ease, color 100ms ease;
+  }
+  .en-treeview--sidebar .en-treeview-row:hover {
+    background: rgba(255, 255, 255, 0.07);
+    color: #ffffff;
+  }
+  .en-treeview--sidebar .en-treeview-row.is-selected,
+  .en-treeview--sidebar .en-treeview-row.is-branch {
+    color: #ffffff;
+    background: rgba(0, 86, 255, 0.28);
+    border-left-color: var(--royal);
+  }
+  .en-treeview--sidebar .en-treeview-row.is-selected .en-treeview-label,
+  .en-treeview--sidebar .en-treeview-row.is-branch .en-treeview-label {
+    color: #ffffff;
+  }
+  /* Depth-driven indentation is set inline; leaves sit under parent text. */
+  .en-treeview--sidebar .en-treeview-folder .en-treeview-label {
+    color: #eef1fd;
+    font-weight: 600;
+    letter-spacing: 0.1px;
+  }
+  .en-treeview--sidebar .en-treeview-leaf .en-treeview-label {
+    font-weight: 450;
+  }
+  .en-treeview--sidebar .en-treeview-label {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  /* Folders: the original white-filtered folder icon. */
+  .en-treeview--sidebar img.en-treeview-folder {
+    width: 16px;
+    height: 16px;
+    flex: none;
+    margin-right: 1px;
+    filter: invert(100%) sepia(5%) saturate(22%) hue-rotate(212deg)
+      brightness(107%) contrast(105%);
+  }
+  /* Leaves: dim document icon, white on hover/current. */
+  .en-treeview--sidebar .en-treeview-icon-leaf {
+    color: #93a3d6;
+    flex: none;
+  }
+  .en-treeview--sidebar .en-treeview-row:hover .en-treeview-icon-leaf,
+  .en-treeview--sidebar .en-treeview-row.is-selected .en-treeview-icon-leaf {
+    color: #ffffff;
+  }
+  /* Caret rides the right end and rotates when expanded (original motion). */
+  .en-treeview--sidebar .en-treeview-caret {
+    color: #9fb0e0;
+    margin-left: auto;
+    transition: transform 120ms ease;
+  }
+  .en-treeview--sidebar .en-treeview-caret.is-open {
+    transform: rotate(90deg);
+    color: #ffffff;
+  }
+  .en-treeview--sidebar .en-treeview-row:focus-visible {
+    box-shadow: none;
+    outline: 2px solid #a9c3ff;
+    outline-offset: -2px;
+  }
+  /* Guide line for child rows — per-row segment at the original offset. */
+  .en-treeview--sidebar .en-treeview-row {
+    position: relative;
+  }
+  .en-treeview--sidebar .en-treeview-row.en-treeview-child::before {
+    content: "";
+    position: absolute;
+    left: calc(var(--depth, 0) * 18px - 3px);
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: rgba(255, 255, 255, 0.09);
+  }
+}

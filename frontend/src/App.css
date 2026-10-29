@@ -263,116 +263,6 @@
     padding: 0;
     font-size: 16px;
   }
-  .menu-tree {
-    flex: 1;
-    padding: 0;
-    overflow-y: auto;
-  }
-  .menu-tree-row {
-    height: 29px;
-    min-height: 29px;
-    gap: 7px;
-    padding: 0 8px;
-    border-radius: 4px;
-    margin: 1px 6px 1px 4px;
-    width: calc(100% - 10px);
-    color: #cdd6f2;
-    font-size: 13px;
-    line-height: 29px;
-    cursor: pointer;
-    border-left: 2px solid transparent;
-    transition: background 100ms ease, color 100ms ease;
-  }
-  .menu-tree-row:hover {
-    background: rgba(255, 255, 255, 0.07);
-    color: #ffffff;
-  }
-  .menu-tree-row.menu-tree-current {
-    color: #ffffff;
-    background: rgba(0, 86, 255, 0.28);
-    border-left-color: var(--royal);
-  }
-  /* Depth-driven indentation: --indent = depth*18 + 8 (set inline). Leaves get a
-     few extra px so their text aligns under the parent folder's text, not its caret. */
-  .menu-tree-row {
-    padding-left: var(--indent, 8px);
-  }
-  .menu-tree-screen-row {
-    padding-left: calc(var(--indent, 8px) + 6px);
-  }
-  /* Folders: slightly heavier + folder icon + caret. */
-  .menu-tree-folder-row {
-    color: #eef1fd;
-    font-weight: 600;
-    letter-spacing: 0.1px;
-  }
-  .menu-tree-folder-row .menu-tree-folder {
-    opacity: 0.95;
-  }
-  /* Screens/leaves: dimmer document icon, lighter weight. */
-  .menu-tree-screen-row {
-    font-weight: 450;
-  }
-  .menu-tree-leaf {
-    color: #93a3d6;
-    flex: none;
-  }
-  .menu-tree-screen-row:hover .menu-tree-leaf,
-  .menu-tree-row.menu-tree-current .menu-tree-leaf {
-    color: #ffffff;
-  }
-  .menu-tree-folder {
-    width: 16px;
-    height: 16px;
-    flex: none;
-    margin-right: 1px;
-    filter: invert(100%) sepia(5%) saturate(22%) hue-rotate(212deg) brightness(107%) contrast(105%);
-  }
-  .menu-tree-label {
-    overflow: hidden;
-    color: inherit;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .menu-tree-caret {
-    color: #9fb0e0;
-    margin-left: auto;
-    transition: transform 120ms ease;
-  }
-  .menu-tree-caret.is-expanded {
-    transform: rotate(90deg);
-    color: #ffffff;
-  }
-  .menu-tree-row:focus-visible {
-    outline-offset: -2px;
-  }
-  .menu-tree-children[hidden] {
-    display: none;
-  }
-  .menu-tree-children {
-    position: relative;
-  }
-  .menu-tree-children::before {
-    content: "";
-    position: absolute;
-    left: var(--guide, 15px);
-    top: 0;
-    bottom: 0;
-    width: 1px;
-    background: rgba(255, 255, 255, 0.09);
-  }
-  .menu-tree::-webkit-scrollbar {
-    width: 5px;
-  }
-  .menu-tree::-webkit-scrollbar-thumb {
-    background: #32348e;
-    border-radius: 4px;
-  }
-  .menu-tree-grid {
-    height: 100%;
-    min-height: 0;
-    overflow: hidden;
-  }
   .menu-grid-node {
     color: #c0cbe1;
     text-align: left;
@@ -1287,14 +1177,6 @@
     .sidebar {
       align-items: stretch;
     }
-    .menu-tree {
-      padding: 8px 5px;
-    }
-    .menu-tree-grid {
-      height: 100%;
-      min-height: 0;
-      overflow: hidden;
-    }
     .menu-grid-node {
       color: #c0cbe1;
       text-align: left;
@@ -1456,13 +1338,6 @@
   }
 }
 @layer components {
-  .menu-tree {
-    min-height: 0;
-
-    overflow: hidden;
-
-    padding: 0 7px 12px;
-  }
   @media (max-width: 680px) {
     .menu-grid-label,
     .menu-grid-caret {
