@@ -1,65 +1,82 @@
-import {
-  forwardRef,
-  useImperativeHandle,
-  useState,
-} from "react";
+﻿import { memo, useEffect, useRef, useState } from "react";
+import type { CustomCellEditorProps } from "ag-grid-react";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import dayjs, { type Dayjs } from "dayjs";
-import type { ICellEditorParams } from "ag-grid-community";
-
-/** Normalise a stored value (YYYYMMDD / ISO / Date / dayjs) to a Dayjs. */
-function toDayjs(value: unknown): Dayjs | null {
-  if (value == null || value === "") return null;
-  if (value instanceof Date) return dayjs(value);
-  if (dayjs.isDayjs(value)) return value;
-  const s = String(value);
-  if (/^\d{8}$/.test(s)) return dayjs(s, "YYYYMMDD");
-  const d = dayjs(s);
-  return d.isValid() ? d : null;
-}
-
-/** Format a cell's stored value for display as YYYY/MM/DD. */
-export function formatYmd(value: unknown): string {
-  const d = toDayjs(value);
-  return d && d.isValid() ? d.format("YYYY/MM/DD") : "";
-}
+import type { Dayjs } from "dayjs";
+import { toDayjs } from "./dateFormat";
 
 /**
- * AG-Grid cell editor that opens the MUI X DatePicker (the same component the
- * EnDateBox control uses). Stores the result back as a YYYYMMDD string so the
- * underlying row keeps the ENOTES date format.
+ * SNOTES DateBoxCellEditor port (shared/components/Grid/DateBoxCellEditor.tsx
+ * of the reference app): an inline, borderless MUI DatePicker whose calendar
+ * opens on focus, with no visible picker chrome. The selected date streams
+ * back through onValueChange as the ENOTES "YYYYMMDD" string; AG-Grid commits
+ * it when editing ends, exactly like the WinForms date cell.
  */
-export const EnDateCellEditor = forwardRef<
-  { getValue: () => string },
-  ICellEditorParams
->(function EnDateCellEditor({ value, api }, ref) {
-  const [date, setDate] = useState<Dayjs | null>(toDayjs(value));
+function EnDateCellEditor({ value, onValueChange }: CustomCellEditorProps) {
+  const [date, setDate] = useState<Dayjs | null>(() => toDayjs(value));
+  const [open, setOpen] = useState(true); // calendar open from the start (SNOTES)
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
-  useImperativeHandle(ref, () => ({
-    getValue: () => (date && date.isValid() ? date.format("YYYYMMDD") : ""),
-  }));
+  // Focus the field (DOM side effect only; the calendar opens via state above).
+  useEffect(() => {
+    const input = wrapperRef.current?.querySelector("input");
+    input?.focus();
+  }, []);
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <DatePicker
-        open
-        value={date}
-        format="YYYY/MM/DD"
-        onChange={(next) => setDate(next)}
-        onAccept={() => api.stopEditing()}
-        onClose={() => api.stopEditing()}
-        slotProps={{
-          textField: {
-            size: "small",
-            autoFocus: true,
-            fullWidth: true,
-            sx: { minWidth: 130 },
-          },
-        }}
-      />
+      <div ref={wrapperRef} className="en-date-editor">
+        <DatePicker
+          format="YYYY/MM/DD"
+          value={date}
+          open={open}
+          onClose={() => setOpen(false)}
+          onChange={(next) => {
+            setDate(next);
+            onValueChange(
+              next && next.isValid() ? next.format("YYYYMMDD") : "",
+            );
+          }}
+          slotProps={{
+            inputAdornment: { sx: { display: "none" } },
+            openPickerButton: { sx: { display: "none" } },
+            textField: {
+              size: "small",
+              autoFocus: true,
+              fullWidth: true,
+              sx: {
+                height: "100%",
+                // Every wrapper layer: no padding at all
+                "& .MuiInputBase-root, & .MuiOutlinedInput-root, & .MuiPickersInputBase-root, & .MuiPickersOutlinedInput-root":
+                  {
+                    height: "100%",
+                    padding: 0,
+                    borderRadius: 0,
+                    font: "inherit",
+                    letterSpacing: "inherit",
+                  },
+                // The part that holds the visible YYYY/MM/DD text
+                "& .MuiPickersInputBase-sectionsContainer, & .MuiPickersSectionList-root":
+                  {
+                    padding: 0,
+                    margin: 0,
+                    width: "100%",
+                    justifyContent: "center",
+                    whiteSpace: "nowrap",
+                  },
+                // Older (v6) input element
+                "& .MuiInputBase-input": {
+                  padding: 0,
+                  textAlign: "center",
+                },
+                "& fieldset": { border: "none" },
+              },
+            },
+          }}
+        />
+      </div>
     </LocalizationProvider>
   );
-});
+}
 
-export default EnDateCellEditor;
+export default memo(EnDateCellEditor);

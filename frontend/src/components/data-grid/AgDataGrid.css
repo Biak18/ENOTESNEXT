@@ -97,4 +97,37 @@
     color: #8997a5;
     font-size: 11px;
   }
+  /* Single border for a cell in edit mode; the editor itself draws none */
+  .enotes-ag-grid .ag-cell.ag-cell-inline-editing {
+    padding: 0;
+    height: 100%;
+    background: #ffffff;
+    box-shadow: none;
+    border: 1px solid var(--royal) !important;
+  }
+  .enotes-ag-grid .ag-cell-edit-wrapper,
+  .enotes-ag-grid .ag-cell-editor {
+    width: 100%;
+    height: 100%;
+  }
+  .enotes-ag-grid .ag-cell-inline-editing .MuiOutlinedInput-notchedOutline,
+  .enotes-ag-grid
+    .ag-cell-inline-editing
+    .MuiPickersOutlinedInput-notchedOutline {
+    border: none !important;
+  }
+
+  .enotes-ag-grid .ag-cell-inline-editing .MuiInputAdornment-root {
+    display: none;
+  }
+
+  /* .enotes-ag-grid .ag-cell-inline-editing * {
+    outline: 1px solid rgba(255, 0, 0, 0.4);
+  } */
+  /* Inline SNOTES-style date editor: borderless field filling the focused
+     cell - the cell itself draws the AG-Grid editing outline. */
+  .en-date-editor {
+    width: 100%;
+    height: 100%;
+  }
 }

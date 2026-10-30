@@ -21,7 +21,8 @@ import type {
   AgDataGridProps,
   AgRow,
 } from "./agDataGridTypes";
-import EnDateCellEditor, { formatYmd } from "./EnDateCellEditor";
+import EnDateCellEditor from "./EnDateCellEditor";
+import { formatYmd } from "./dateFormat";
 import "./AgDataGrid.css";
 
 const defaultColDef: ColDef = {
@@ -63,7 +64,8 @@ function toColDef(col: AgColDef): ColDef {
     colType,
     lookupOptions = [],
     precision = 2,
-    showFooterSum,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- sums are computed by the screen layer
+    showFooterSum: _showFooterSum,
     cellClass,
     ...rest
   } = col;
@@ -89,17 +91,18 @@ function toColDef(col: AgColDef): ColDef {
       };
     }
     case "lookup": {
+      // Built-in Community editor. Values are CODES; the editor's field and
+      // list labels derive from the column's valueFormatter (code->name),
+      // mirroring SNOTES's SnComboBox. Note: the list does not self-open when
+      // editing starts by double-click (Community quirk) - one extra click.
+      const nameOf = (code: string | null | undefined) =>
+        lookupOptions.find((o) => o.code === code)?.name ?? code ?? "";
       return {
         cellEditor: "agSelectCellEditor",
-        cellEditorParams: {
-          values: lookupOptions.map((o) => o.code),
-          formatValue: (code: string) =>
-            lookupOptions.find((o) => o.code === code)?.name ?? code,
-        },
+        cellEditorParams: { values: lookupOptions.map((o) => o.code) },
+        valueFormatter: rest.valueFormatter ?? ((p) => nameOf(p.value)),
         cellRenderer:
-          rest.cellRenderer ??
-          ((p: { value: string }) =>
-            lookupOptions.find((o) => o.code === p.value)?.name ?? p.value),
+          rest.cellRenderer ?? ((p: { value: string }) => nameOf(p.value)),
         ...rest,
         cellClass: mergeClass(cellClass, ""),
       };
@@ -346,6 +349,18 @@ export const AgDataGrid = forwardRef<AgDataGridHandle, AgDataGridProps>(
       },
       [onCellValueChanged, handleGetRowId],
     );
+    // A double-click paints a word selection (enableCellTextSelection). For
+    // the inline lookup select (plain rendered text) that stale highlight is
+    // carried into the editor - clear it when a lookup edit starts. Text
+    // columns keep their intentional select-all-on-focus behavior.
+    const handleCellEditingStarted = useCallback(
+      (event: { column?: { getColDef?: () => { cellEditor?: unknown } } }) => {
+        if (event.column?.getColDef?.().cellEditor === "agSelectCellEditor") {
+          document.getSelection()?.removeAllRanges();
+        }
+      },
+      [],
+    );
     const handleSelectionChanged = useCallback(() => {
       const selected = gridRef.current?.api.getSelectedRows() ?? [];
       onFocusedRowChanged?.((selected[0] as AgRow | undefined) ?? null);
@@ -482,6 +497,7 @@ export const AgDataGrid = forwardRef<AgDataGridHandle, AgDataGridProps>(
           noRowsOverlayComponent={() => (
             <div className="ag-empty-overlay">{emptyMessage}</div>
           )}
+          onCellEditingStarted={handleCellEditingStarted}
           onCellValueChanged={handleCellValueChanged}
           onSelectionChanged={handleSelectionChanged}
           onRowDoubleClicked={handleRowDoubleClicked}
