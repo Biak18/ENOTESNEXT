@@ -12,6 +12,7 @@ export interface EnNumberBoxProps extends Omit<EnValueControlProps, "defaultValu
 }
 
 export default function EnNumberBox({
+  label,
   defaultValue = 0,
   onValueChanged,
   isReadOnly = false,
@@ -38,7 +39,7 @@ export default function EnNumberBox({
       fullWidth
       size="small"
       slotProps={{
-        htmlInput: { min, max, step },
+        htmlInput: { min, max, step, "aria-label": label },
         input: { readOnly: !isEditable },
       }}
       sx={{ backgroundColor: isEditable ? "white" : "#f5f5f5" }}

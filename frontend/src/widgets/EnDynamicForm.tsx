@@ -87,6 +87,7 @@ export default function EnDynamicForm({
         } else if (field.type === "number") {
           control = (
             <EnNumberBox
+              label={field.label}
               defaultValue={value === "" || value == null ? 0 : Number(value)}
               onValueChanged={(next) => handleChange(next)}
               isReadOnly={disabled}
@@ -99,6 +100,7 @@ export default function EnDynamicForm({
         } else if (field.type === "date") {
           control = (
             <EnDateBox
+              label={field.label}
               defaultValue={strValue}
               onValueChanged={(next) => handleChange(next)}
               isReadOnly={disabled}
@@ -108,6 +110,7 @@ export default function EnDynamicForm({
         } else if (field.type === "month") {
           control = (
             <EnDateMonthBox
+              label={field.label}
               defaultValue={strValue}
               onValueChanged={(next) => handleChange(next)}
               isReadOnly={disabled}
@@ -117,6 +120,7 @@ export default function EnDynamicForm({
         } else if (field.type === "select") {
           control = (
             <EnComboBox
+              label={field.label}
               defaultValue={strValue}
               options={toEnOptions(field.options)}
               onValueChanged={(next) => handleChange(next)}
@@ -127,6 +131,7 @@ export default function EnDynamicForm({
         } else if (field.type === "textarea") {
           control = (
             <EnMemoBox
+              label={field.label}
               defaultValue={strValue}
               onValueChanged={(next) => handleChange(next)}
               isReadOnly={disabled}
@@ -138,6 +143,7 @@ export default function EnDynamicForm({
           // default: text
           control = (
             <EnTextBox
+              label={field.label}
               defaultValue={strValue}
               onValueChanged={(next) => handleChange(next)}
               isReadOnly={disabled}

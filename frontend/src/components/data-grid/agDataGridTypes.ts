@@ -97,5 +97,10 @@ export type AgDataGridProps = {
   onRowDoubleClicked?: (row: AgRow) => void;
   /** Cell double-click handler with column info (used for password change etc). */
   onCellDoubleClicked?: (params: { colDef: { field?: string }; data: AgRow }) => void;
+  /**
+   * When true, show AG-Grid Community's built-in skeleton loading overlay
+   * instead of the no-rows overlay (SNOTES busy-on-search pattern).
+   */
+  loading?: boolean;
   emptyMessage?: string;
 };

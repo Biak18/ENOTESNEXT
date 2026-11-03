@@ -24,6 +24,7 @@ function formatText(value: string, format?: string) {
 }
 
 export default function EnTextBox({
+  label,
   defaultValue = "",
   onValueChanged,
   format,
@@ -64,6 +65,7 @@ export default function EnTextBox({
       size="small"
       variant="outlined"
       slotProps={{
+        htmlInput: { "aria-label": label },
         input: {
           readOnly: !isEditable,
           autoComplete: "off",

@@ -184,6 +184,7 @@ export const AgDataGrid = forwardRef<AgDataGridHandle, AgDataGridProps>(
       onRowDoubleClicked,
       onCellDoubleClicked,
       emptyMessage = "No rows to display.",
+      loading = false,
     },
     ref,
   ) {
@@ -494,6 +495,7 @@ export const AgDataGrid = forwardRef<AgDataGridHandle, AgDataGridProps>(
           getContextMenuItems={getContextMenuItems}
           popupParent={popupParent}
           onColumnResized={handleColumnResized}
+          loading={loading}
           noRowsOverlayComponent={() => (
             <div className="ag-empty-overlay">{emptyMessage}</div>
           )}

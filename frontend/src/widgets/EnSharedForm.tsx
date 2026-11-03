@@ -1,6 +1,7 @@
 import { forwardRef, useImperativeHandle } from "react";
 import type { ReactNode } from "react";
 import EnDynamicForm from "./EnDynamicForm";
+import EnFormSkeleton from "./EnFormSkeleton";
 import useEnSyncedState from "../components/controls/useEnSyncedState";
 import { isEnFormValid } from "./EnFormTypes";
 import type { EnFormData, EnFormField, EnFormHandle, EnFormValue } from "./EnFormTypes";
@@ -15,6 +16,9 @@ export interface EnSharedFormProps {
   columns?: number;
   onButtonClick?: (fieldId: string) => void;
   onValueChanged?: (fieldId: string, value: EnFormValue, values: EnFormData) => void;
+  /** When truthy, the form body renders as a layout-preserving skeleton
+   * (mirroring `fields`) instead of mounting the editable controls. */
+  busy?: boolean;
 }
 
 const EnSharedForm = forwardRef<EnFormHandle, EnSharedFormProps>(
@@ -27,6 +31,7 @@ const EnSharedForm = forwardRef<EnFormHandle, EnSharedFormProps>(
       columns = 2,
       onButtonClick,
       onValueChanged,
+      busy,
     },
     ref,
   ) => {
@@ -47,7 +52,12 @@ const EnSharedForm = forwardRef<EnFormHandle, EnSharedFormProps>(
     onValueChanged?.(fieldId, value, next);
   };
 
-  const content = (
+  const content = busy ? (
+    // Busy: skeleton keeps the pending form's layout stable (no control mounts).
+    <div className="min-w-0 p-3" aria-busy="true" aria-live="polite">
+      <EnFormSkeleton fields={fields} columns={columns} />
+    </div>
+  ) : (
     <div className="min-w-0 p-3">
       <EnDynamicForm
         fields={fields}

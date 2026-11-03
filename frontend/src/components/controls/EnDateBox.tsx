@@ -11,6 +11,7 @@ export interface EnDateBoxProps extends EnValueControlProps {
 }
 
 export default function EnDateBox({
+  label,
   defaultValue = "",
   onValueChanged,
   isReadOnly = false,
@@ -43,6 +44,7 @@ export default function EnDateBox({
           textField: {
             fullWidth: true,
             required: isRequired,
+            slotProps: { htmlInput: { "aria-label": label } },
             size: "small",
             onKeyDown: (event) => {
               if (event.key === "Enter") {

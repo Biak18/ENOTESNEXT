@@ -9,6 +9,8 @@ export type EnOption = {
 export type EnFocusTarget = "current" | "next";
 
 export interface EnValueControlProps {
+  /** Accessible name for the input (screen readers); optional. */
+  label?: string;
   defaultValue?: string;
   onValueChanged?: (value: string) => void;
   isReadOnly?: boolean;

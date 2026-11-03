@@ -7,6 +7,7 @@ export interface EnMemoBoxProps extends EnValueControlProps {
 }
 
 export default function EnMemoBox({
+  label,
   defaultValue = "",
   onValueChanged,
   isReadOnly = false,
@@ -31,7 +32,10 @@ export default function EnMemoBox({
       minRows={minRows}
       fullWidth
       size="small"
-      slotProps={{ input: { readOnly: !isEditable } }}
+      slotProps={{
+        htmlInput: { "aria-label": label },
+        input: { readOnly: !isEditable },
+      }}
       sx={{ backgroundColor: isEditable ? "white" : "#f5f5f5" }}
     />
   );

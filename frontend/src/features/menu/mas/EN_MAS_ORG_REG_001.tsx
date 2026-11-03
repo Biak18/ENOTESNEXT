@@ -365,7 +365,8 @@ export const CompanyRegister = forwardRef<ScreenHandle, ScreenProps>(
                 onSave={() => void save()}
                 onCellValueChanged={handleCellValueChanged}
                 onFocusedRowChanged={handleFocusedRow}
-                emptyMessage={busy ? "LoadingвЂ¦" : "No companies."}
+                loading={busy}
+                emptyMessage="No companies."
               />
             </div>
             {invalidCell && (
@@ -391,7 +392,11 @@ export const CompanyRegister = forwardRef<ScreenHandle, ScreenProps>(
               </div>
               <span className="draft-state">{dirty ? "Unsaved" : "Saved"}</span>
             </div>
-            {focused ? (
+            {busy && !focused ? (
+              // During a search with no focused row, hold the detail panel's
+              // shape with the shared-form skeleton.
+              <EnSharedForm fields={formFields} columns={3} busy />
+            ) : focused ? (
               <EnSharedForm
                 ref={formRef}
                 fields={formFields}

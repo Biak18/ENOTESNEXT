@@ -97,7 +97,9 @@ function PasswordCell() {
   // Backend does not return dcPassword in list response (security).
   // Always show mask indicator so users know a password exists / can be set.
   return (
-    <span title="Double-click to change password">{"\u2022\u2022\u2022\u2022\u2022\u2022"}</span>
+    <span title="Double-click to change password">
+      {"\u2022\u2022\u2022\u2022\u2022\u2022"}
+    </span>
   );
 }
 
@@ -108,7 +110,10 @@ export const UserRegister = forwardRef<ScreenHandle, ScreenProps>(
     const [search, setSearch] = useState("");
     const [focusedIdx, setFocusedIdx] = useState<number | null>(null);
     const [dirty, setDirty] = useState(false);
-    const [pwdModal, setPwdModal] = useState<{ cdUser: string; nmUser: string } | null>(null);
+    const [pwdModal, setPwdModal] = useState<{
+      cdUser: string;
+      nmUser: string;
+    } | null>(null);
     const [newPassword, setNewPassword] = useState("");
     const [oldPassword, setOldPassword] = useState("");
     const [invalidCell, setInvalidCell] = useState<{
@@ -258,6 +263,7 @@ export const UserRegister = forwardRef<ScreenHandle, ScreenProps>(
       setBusy(true);
       try {
         const changes = gridRef.current?.getChanges() ?? [];
+
         const changedKeys = new Set(changes.map((c) => c._key).filter(Boolean));
         const items: UserItem[] = rows
           .filter((r) => r.__new || (r._key && changedKeys.has(r._key)))
@@ -361,7 +367,8 @@ export const UserRegister = forwardRef<ScreenHandle, ScreenProps>(
           void save();
         },
         canClose: async () =>
-          !dirty || (await showEnConfirm("Discard unsaved user changes?")) === true,
+          !dirty ||
+          (await showEnConfirm("Discard unsaved user changes?")) === true,
       }),
       [addRow, deleteFocused, dirty, onSearch, save],
     );
@@ -406,7 +413,8 @@ export const UserRegister = forwardRef<ScreenHandle, ScreenProps>(
                 onCellValueChanged={handleCellValueChanged}
                 onCellDoubleClicked={handleCellDoubleClicked}
                 onFocusedRowChanged={handleFocusedRow}
-                emptyMessage={busy ? "Loading…" : "No users."}
+                loading={busy}
+                emptyMessage="No users."
               />
             </div>
             {invalidCell && (
@@ -432,7 +440,9 @@ export const UserRegister = forwardRef<ScreenHandle, ScreenProps>(
               type="password"
               fullWidth
               value={oldPassword}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOldPassword(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setOldPassword(e.target.value)
+              }
               margin="dense"
             />
             <TextField
@@ -440,7 +450,9 @@ export const UserRegister = forwardRef<ScreenHandle, ScreenProps>(
               type="password"
               fullWidth
               value={newPassword}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPassword(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setNewPassword(e.target.value)
+              }
               margin="dense"
             />
           </EnCommonModal>
@@ -449,5 +461,3 @@ export const UserRegister = forwardRef<ScreenHandle, ScreenProps>(
     );
   },
 );
-
-

@@ -11,6 +11,7 @@ export interface EnComboBoxProps extends Omit<EnValueControlProps, "defaultValue
 }
 
 export default function EnComboBox({
+  label,
   defaultValue = "",
   options = [],
   emptyLine = false,
@@ -53,6 +54,7 @@ export default function EnComboBox({
           slotProps={{
             ...params.slotProps,
             input: { ...params.slotProps.input, readOnly: !isEditable },
+            htmlInput: { ...(params.slotProps.htmlInput ?? {}), "aria-label": label },
           }}
           sx={{ backgroundColor: isEditable ? "white" : "#f5f5f5" }}
         />

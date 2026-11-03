@@ -1,0 +1,56 @@
+/* Placeholder shimmer for EnSharedForm's busy state (nullable `busy` prop).
+   Layout-only bars - no content - keep the pending form's size stable so
+   mounting the real fields causes no jump. */
+
+.en-form-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 80px;
+  padding: 2px 0;
+}
+
+.en-skel-bar {
+  display: inline-block;
+  height: 12px;
+  border-radius: 3px;
+  background: linear-gradient(100deg, #eef1f8 40%, #f8fafe 50%, #eef1f8 60%);
+  background-size: 200% 100%;
+  animation: en-skel-shimmer 1.2s linear infinite;
+}
+
+.en-skel-label {
+  width: 45%;
+  height: 10px;
+}
+
+.en-skel-control {
+  width: 100%;
+  height: 26px;
+}
+
+.en-skel-checkbox {
+  width: 120px;
+  height: 18px;
+}
+
+.en-skel-group {
+  width: 100%;
+  height: 14px;
+}
+
+.en-skel-textarea {
+  height: 62px;
+}
+
+@keyframes en-skel-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .en-skel-bar {
+    animation: none;
+  }
+}
