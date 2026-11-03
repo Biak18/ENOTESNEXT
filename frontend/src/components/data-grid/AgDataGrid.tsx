@@ -420,6 +420,21 @@ export const AgDataGrid = forwardRef<AgDataGridHandle, AgDataGridProps>(
         )?.field;
         if (firstEditable) api.setFocusedCell(index, firstEditable);
       },
+      focusFirst: () => {
+        const api = gridRef.current?.api;
+        if (!api || api.getDisplayedRowCount() === 0) return;
+        const node = api.getDisplayedRowAtIndex(0);
+        if (!node) return;
+        api.ensureIndexVisible(0);
+        node.setSelected(true);
+        // Focus the first real column (row-number column skipped); works on
+        // read-only grids too so keyboard navigation starts at row 1.
+        const firstCol = resolvedColumnDefs.find(
+          (col) => col.colId !== "fixIndicator" && Boolean(col.field),
+        );
+        const field = String(firstCol?.colId ?? firstCol?.field ?? "");
+        if (field) api.setFocusedCell(0, field);
+      },
       focusLastRow: () => {
         const api = gridRef.current?.api;
         if (!api) return;

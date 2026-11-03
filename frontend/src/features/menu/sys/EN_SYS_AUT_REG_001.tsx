@@ -26,6 +26,7 @@ import {
 } from "../../../components/search-panel";
 import type { ScreenHandle, ScreenProps } from "../../screen-contract";
 import { useQueryClient } from "@tanstack/react-query";
+import { useScreenSearch } from "../../useScreenSearch";
 import { fetchDataset, invalidateDataset } from "../../../api/query";
 import { callApi } from "../../../api/endpoints";
 import type {
@@ -156,6 +157,9 @@ export const CompanyMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
       [queryClient]
     );
 
+    // GLOBAL Search: run the loaders, then focus the first company row.
+    const onSearch = useScreenSearch(load, companyGridRef);
+
     const handleCompanyFocus = useCallback(
       (row: AgRow | null) => {
         const cd = row?.cdCompany ? String(row.cdCompany) : null;
@@ -239,14 +243,14 @@ export const CompanyMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
     useImperativeHandle(
       ref,
       () => ({
-        search: () => void load(),
+        search: onSearch,
         save: () => {
           void save();
         },
         canClose: async () =>
           !dirty || (await showEnConfirm("Discard unsaved company-menu changes?")) === true,
       }),
-      [dirty, load, save],
+      [dirty, onSearch, save],
     );
 
     return (

@@ -49,6 +49,11 @@ export type AgDataGridHandle = {
   /** Select + focus the last row's first editable cell. */
   focusLastRow: () => void;
   /**
+   * Select + focus the first row (global post-Search focus: every screen's
+   * toolbar Search ends with this call via useScreenSearch).
+   */
+  focusFirst: () => void;
+  /**
    * After removing a row, select + focus the row above the deleted index
    * (or the first row when deleting the top row). SNOTES handleRowFocusAfterDelete.
    */

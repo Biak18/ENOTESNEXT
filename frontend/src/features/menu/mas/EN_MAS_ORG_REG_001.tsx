@@ -20,6 +20,7 @@ import {
   SearchPanelField,
 } from "../../../components/search-panel";
 import { useQueryClient } from "@tanstack/react-query";
+import { useScreenSearch } from "../../useScreenSearch";
 import { fetchDataset, invalidateDataset } from "../../../api/query";
 import EnSharedForm from "../../../widgets/EnSharedForm";
 import type {
@@ -159,10 +160,8 @@ export const CompanyRegister = forwardRef<ScreenHandle, ScreenProps>(
       [invalidCell],
     );
 
-    // Toolbar Search re-runs the query (SNOTES onSearch), not just focus.
-    const onSearch = useCallback(() => {
-      void load();
-    }, [load]);
+    // GLOBAL Search: run the query, then focus the first grid row.
+    const onSearch = useScreenSearch(load, gridRef);
 
     const addRow = useCallback(() => {
       setRows((current) => {

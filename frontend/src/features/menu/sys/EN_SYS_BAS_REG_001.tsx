@@ -21,6 +21,7 @@ import {
 } from "../../../components/search-panel";
 import type { ScreenHandle, ScreenProps } from "../../screen-contract";
 import { useQueryClient } from "@tanstack/react-query";
+import { useScreenSearch } from "../../useScreenSearch";
 import { fetchDataset, invalidateDataset } from "../../../api/query";
 import { fnSave } from "../../../api/endpoints";
 import { waitMinBusy } from "../../../components/controls/waitMinBusy";
@@ -209,9 +210,8 @@ export const UserRegister = forwardRef<ScreenHandle, ScreenProps>(
     );
 
     // Toolbar Search re-runs the query (SNOTES onSearch), not just focus.
-    const onSearch = useCallback(() => {
-      void load();
-    }, [load]);
+    // GLOBAL Search: run the query, then focus the first grid row.
+    const onSearch = useScreenSearch(load, gridRef);
 
     const addRow = useCallback(() => {
       setRows((current) => {
@@ -368,7 +368,7 @@ export const UserRegister = forwardRef<ScreenHandle, ScreenProps>(
     useImperativeHandle(
       ref,
       () => ({
-        search: () => void load(),
+        search: onSearch,
         insert: addRow,
         delete: deleteFocused,
         save: () => {
@@ -378,7 +378,7 @@ export const UserRegister = forwardRef<ScreenHandle, ScreenProps>(
           !dirty ||
           (await showEnConfirm("Discard unsaved user changes?")) === true,
       }),
-      [addRow, deleteFocused, dirty, onSearch, queryClient, save],
+      [addRow, deleteFocused, dirty, onSearch, save],
     );
 
     return (

@@ -8,6 +8,7 @@ import {
 } from "react";
 import {
   EnTreeView,
+  type EnTreeViewHandle,
   type TreeNode,
   type TreeColumn,
 } from "../../../components/tree";
@@ -19,6 +20,7 @@ import {
 import type { ScreenHandle, ScreenProps } from "../../screen-contract";
 import EnSkeletonList from "../../../widgets/EnSkeletonList";
 import { useQueryClient } from "@tanstack/react-query";
+import { useScreenSearch } from "../../useScreenSearch";
 import { fetchDataset, invalidateDataset } from "../../../api/query";
 import { fnSave } from "../../../api/endpoints";
 import { waitMinBusy } from "../../../components/controls/waitMinBusy";
@@ -110,6 +112,10 @@ function collectDescendantIds(rows: MenuRow[], rootCdMenu: string): string[] {
 
 const tree = useMemo(() => buildTree(rows), [rows]);
 
+    const treeRef = useRef<EnTreeViewHandle>(null);
+    // GLOBAL Search: load the role-matrix, then focus the first tree node.
+    const onSearch = useScreenSearch(load, treeRef);
+
     const toggle = useCallback(
       (cdMenu: string, role: (typeof ROLES)[number], checked: boolean) => {
         // Folder ticks cascade visually over the whole subtree. The backend
@@ -175,14 +181,14 @@ const tree = useMemo(() => buildTree(rows), [rows]);
     useImperativeHandle(
       ref,
       () => ({
-        search: () => void load(),
+        search: onSearch,
         save: () => {
           void save();
         },
         canClose: async () =>
           !dirty || (await showEnConfirm("Discard unsaved role-menu changes?")) === true,
       }),
-      [dirty, load, save],
+      [dirty, onSearch, save],
     );
 
     return (
@@ -208,6 +214,7 @@ const tree = useMemo(() => buildTree(rows), [rows]);
               <EnSkeletonList rows={6} />
             ) : (
               <EnTreeView<MenuRow>
+                ref={treeRef}
                 nodes={tree}
                 columns={columns}
                 className="en-treeview--matrix"

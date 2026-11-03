@@ -32,6 +32,7 @@ import type { MenuDto, SaveResponse } from "../../../api/contracts";
 import { ApiError } from "../../../api/http";
 import { showEnConfirm, showEnDialog } from "../../../widgets/EnDialogService";
 import { useQueryClient } from "@tanstack/react-query";
+import { useScreenSearch } from "../../useScreenSearch";
 import { fetchDataset, invalidateDataset } from "../../../api/query";
 
 const typeOptions = [
@@ -155,9 +156,8 @@ export const MenuRegisterScreen = forwardRef<ScreenHandle, ScreenProps>(
     }, [tree]);
 
     // Toolbar Search re-runs the query (SNOTES onSearch), not just focus.
-    const onSearch = useCallback(() => {
-      void load();
-    }, [load]);
+    // GLOBAL Search: run the query, then focus the first tree node.
+    const onSearch = useScreenSearch(load, treeRef);
 
     const addNode = useCallback(
       (asChild: boolean) => {

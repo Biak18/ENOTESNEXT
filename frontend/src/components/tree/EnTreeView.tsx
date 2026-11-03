@@ -77,6 +77,11 @@ export type EnTreeViewHandle = {
   expandAll: (open: boolean) => void;
   /** Select + DOM-focus a node by id (expanding ancestors first). */
   selectAndFocus: (id: string) => void;
+  /**
+   * Select + focus the first (top) node — global post-Search focus. Works
+   * even on matrix trees with no onSelect: the row simply gets DOM focus.
+   */
+  focusFirst: () => void;
 };
 
 type FlatRow<T> = { node: TreeNode<T>; depth: number };
@@ -339,6 +344,24 @@ function EnTreeViewInner<T>(
         });
       walk(nodes);
       setExpanded(next);
+    },
+    focusFirst: () => {
+      const first = nodes[0];
+      if (!first) return;
+      touched.current = true;
+      if (selectable) {
+        requestAnimationFrame(() => selectNode(first, true));
+      } else {
+        // Matrix trees (no onSelect): still give the top row DOM focus so
+        // keyboard navigation starts there.
+        requestAnimationFrame(() => {
+          listRef.current
+            ?.querySelector<HTMLElement>(
+              `[data-node-id="${CSS.escape(first.id)}"]`,
+            )
+            ?.focus();
+        });
+      }
     },
     selectAndFocus: (id) => {
       const path = findPath(nodes, id);
