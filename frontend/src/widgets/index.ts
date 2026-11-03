@@ -19,3 +19,4 @@ export type { EnFormData, EnFormField, EnFormHandle, EnFormValue } from "./EnFor
 export type { EnSearchPanelProps } from "./EnSearchPanel";
 export type { EnSharedFormProps } from "./EnSharedForm";
 export type { EnFormSkeletonProps } from "./EnFormSkeleton";
+export { default as EnSkeletonList } from "./EnSkeletonList";

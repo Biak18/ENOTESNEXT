@@ -17,6 +17,7 @@ import {
   SearchPanelField,
 } from "../../../components/search-panel";
 import type { ScreenHandle, ScreenProps } from "../../screen-contract";
+import EnSkeletonList from "../../../widgets/EnSkeletonList";
 import { fnGetDataSet, fnSave } from "../../../api/endpoints";
 import type { RoleMenuDto, RoleMenuItem, SaveResponse } from "../../../api/contracts";
 import { ApiError } from "../../../api/http";
@@ -58,9 +59,11 @@ export const RoleMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
   function RoleMenuRegister(_props, ref) {
     const [rows, setRows] = useState<MenuRow[]>([]);
     const [dirty, setDirty] = useState(false);
+    const [busy, setBusy] = useState(false);
     const changed = useRef<Map<string, RoleMenuItem>>(new Map());
 
     const load = useCallback(async () => {
+      setBusy(true);
       try {
         const data = await fnGetDataSet<RoleMenuDto[]>("RoleMenus");
         setRows(data);
@@ -68,6 +71,8 @@ export const RoleMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
         setDirty(false);
       } catch (e) {
         await showEnDialog("error", e instanceof ApiError ? e.message : "Failed to load role menus.");
+      } finally {
+        setBusy(false);
       }
     }, []);
 
@@ -192,13 +197,17 @@ const tree = useMemo(() => buildTree(rows), [rows]);
             <span className="draft-state">{dirty ? "Unsaved" : "Saved"}</span>
           </div>
           <div className="flex-1 min-h-0 overflow-auto">
-            <EnTreeView<MenuRow>
-              nodes={tree}
-              columns={columns}
-              className="en-treeview--matrix"
-              defaultExpandedDepth={2}
-              ariaLabel="Menu role matrix"
-            />
+            {busy && !rows.length ? (
+              <EnSkeletonList rows={6} />
+            ) : (
+              <EnTreeView<MenuRow>
+                nodes={tree}
+                columns={columns}
+                className="en-treeview--matrix"
+                defaultExpandedDepth={2}
+                ariaLabel="Menu role matrix"
+              />
+            )}
           </div>
         </div>
       </div>

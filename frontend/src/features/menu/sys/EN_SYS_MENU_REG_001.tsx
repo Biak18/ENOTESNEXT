@@ -14,6 +14,7 @@ import {
   type TreeNode,
 } from "../../../components/tree";
 import { EnSplitter } from "../../../components/splitter";
+import EnSkeletonList from "../../../widgets/EnSkeletonList";
 import EnSharedForm from "../../../widgets/EnSharedForm";
 import type {
   EnFormField,
@@ -110,6 +111,7 @@ export const MenuRegisterScreen = forwardRef<ScreenHandle, ScreenProps>(
     );
 
     const load = useCallback(async () => {
+      setBusy(true);
       try {
         const data = await fnGetDataSet<MenuDto[]>(CONTROLLER, {
           search: search || undefined,
@@ -123,10 +125,13 @@ export const MenuRegisterScreen = forwardRef<ScreenHandle, ScreenProps>(
           "error",
           e instanceof ApiError ? e.message : "Failed to load menus.",
         );
+      } finally {
+        setBusy(false);
       }
     }, [search]);
 
     const tree = useMemo(() => buildTree(rows), [rows]);
+    const [busy, setBusy] = useState(false);
 
     // A node id queued for tree focus once it exists in the rendered tree.
     const pendingFocus = useRef<string | null>(null);
@@ -441,15 +446,19 @@ export const MenuRegisterScreen = forwardRef<ScreenHandle, ScreenProps>(
               }}
             >
               <div className="min-h-0 flex-1 overflow-auto">
-                <EnTreeView<MenuRow>
-                  ref={treeRef}
-                  nodes={tree}
-                  variant="form"
-                  defaultExpandedDepth={1}
-                  ariaLabel="Menu hierarchy"
-                  selectedId={focusedId}
-                  onSelect={(node) => setFocusedId(node.id)}
-                />
+                {busy && !rows.length ? (
+                  <EnSkeletonList rows={6} />
+                ) : (
+                  <EnTreeView<MenuRow>
+                    ref={treeRef}
+                    nodes={tree}
+                    variant="form"
+                    defaultExpandedDepth={1}
+                    ariaLabel="Menu hierarchy"
+                    selectedId={focusedId}
+                    onSelect={(node) => setFocusedId(node.id)}
+                  />
+                )}
               </div>
             </div>
 
@@ -480,6 +489,7 @@ export const MenuRegisterScreen = forwardRef<ScreenHandle, ScreenProps>(
                   ref={formRef}
                   fields={formFields}
                   columns={2}
+                  busy={busy}
                   onValueChanged={handleFormValueChanged}
                 />
               </div>

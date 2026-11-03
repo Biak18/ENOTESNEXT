@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
+import EnSkeletonList from "../../../widgets/EnSkeletonList";
 import { AgDataGrid } from "../../../components/data-grid/AgDataGrid";
 import type {
   AgColDef,
@@ -105,11 +106,13 @@ export const CompanyMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
     const [assigned, setAssigned] = useState<Set<string>>(new Set());
     const [focusedCompany, setFocusedCompany] = useState<string | null>(null);
     const [dirty, setDirty] = useState(false);
+    const [busy, setBusy] = useState(false);
     const changed = useRef<Map<string, boolean>>(new Map());
     const companyGridRef = useRef<AgDataGridHandle>(null);
     const userGridRef = useRef<AgDataGridHandle>(null);
 
     const load = useCallback(async () => {
+      setBusy(true);
       try {
         const [companyList, userList, menus] = await Promise.all([
           fnGetDataSet<CompanyDto[]>("Companies"),
@@ -124,6 +127,8 @@ export const CompanyMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
         setDirty(false);
       } catch (e) {
         await showEnDialog("error", e instanceof ApiError ? e.message : "Failed to load data.");
+      } finally {
+        setBusy(false);
       }
     }, []);
 
@@ -263,6 +268,7 @@ export const CompanyMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
                   getRowId={(data) => String((data as unknown as CompanyDto).cdCompany)}
                   onFocusedRowChanged={handleCompanyFocus}
                   isEditable={false}
+                  loading={busy}
                 />
               </div>
             </div>
@@ -282,6 +288,7 @@ export const CompanyMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
                   }
                   getRowId={(data) => String((data as unknown as UserDto).cdUser)}
                   isEditable={false}
+                  loading={busy}
                 />
               </div>
             </div>
@@ -300,13 +307,17 @@ export const CompanyMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
               <span className="draft-state">{dirty ? "Unsaved" : "Saved"}</span>
             </div>
             <div className="flex-1 min-h-0 overflow-auto">
-              <EnTreeView<NodeData>
-                nodes={menuTree}
-                columns={columns}
-                className="en-treeview--matrix"
-                defaultExpandedDepth={2}
-                ariaLabel="Company menu access"
-              />
+              {busy && !menuTree.length ? (
+                <EnSkeletonList rows={6} />
+              ) : (
+                <EnTreeView<NodeData>
+                  nodes={menuTree}
+                  columns={columns}
+                  className="en-treeview--matrix"
+                  defaultExpandedDepth={2}
+                  ariaLabel="Company menu access"
+                />
+              )}
             </div>
           </div>
         </div>

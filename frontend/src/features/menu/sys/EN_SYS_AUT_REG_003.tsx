@@ -6,6 +6,7 @@
   useRef,
   useState,
 } from "react";
+import EnSkeletonList from "../../../widgets/EnSkeletonList";
 import { AgDataGrid } from "../../../components/data-grid/AgDataGrid";
 import type {
   AgColDef,
@@ -109,11 +110,13 @@ export const UserMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
     const [tree, setTree] = useState<TreeNode<MenuNodeData>[]>([]);
     const [focusedUser, setFocusedUser] = useState<string | null>(null);
     const [dirty, setDirty] = useState(false);
+    const [busy, setBusy] = useState(false);
     const changed = useRef<Map<string, UserMenuItem>>(new Map());
     const gridRef = useRef<AgDataGridHandle>(null);
 
     const load = useCallback(async () => {
       if (!cdCom) return;
+      setBusy(true);
       try {
         const [userList, menuRows, userMenus] = await Promise.all([
           fnGetDataSet<UserDto[]>("Users"),
@@ -126,6 +129,8 @@ export const UserMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
         setDirty(false);
       } catch (e) {
         await showEnDialog("error", e instanceof ApiError ? e.message : "Failed to load user menus.");
+      } finally {
+        setBusy(false);
       }
     }, [cdCom]);
 
@@ -269,6 +274,7 @@ export const UserMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
                 getRowId={(data) => String((data as unknown as UserDto).cdUser)}
                 onFocusedRowChanged={handleFocusedRow}
                 isEditable={false}
+                loading={busy}
               />
             </div>
           </div>
@@ -286,13 +292,17 @@ export const UserMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
               <span className="draft-state">{dirty ? "Unsaved" : "Saved"}</span>
             </div>
             <div className="flex-1 min-h-0 overflow-auto">
-              <EnTreeView<MenuNodeData>
-                nodes={tree}
-                columns={columns}
-                className="en-treeview--matrix"
-                defaultExpandedDepth={2}
-                ariaLabel="User menu access"
-              />
+              {busy && !tree.length ? (
+                <EnSkeletonList rows={6} />
+              ) : (
+                <EnTreeView<MenuNodeData>
+                  nodes={tree}
+                  columns={columns}
+                  className="en-treeview--matrix"
+                  defaultExpandedDepth={2}
+                  ariaLabel="User menu access"
+                />
+              )}
             </div>
           </div>
         </div>
