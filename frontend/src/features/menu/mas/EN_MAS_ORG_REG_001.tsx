@@ -19,6 +19,8 @@ import {
   SearchPanel,
   SearchPanelField,
 } from "../../../components/search-panel";
+import { useQueryClient } from "@tanstack/react-query";
+import { fetchDataset, invalidateDataset } from "../../../api/query";
 import EnSharedForm from "../../../widgets/EnSharedForm";
 import type {
   EnFormField,
@@ -26,7 +28,7 @@ import type {
   EnFormValue,
 } from "../../../widgets/EnFormTypes";
 import type { ScreenHandle, ScreenProps } from "../../screen-contract";
-import { fnGetDataSet, fnSave } from "../../../api/endpoints";
+import { fnSave } from "../../../api/endpoints";
 import { waitMinBusy } from "../../../components/controls/waitMinBusy";
 import type { CompanyDto, CompanyItem, SaveResponse } from "../../../api/contracts";
 import { ApiError } from "../../../api/http";
@@ -85,6 +87,7 @@ export const CompanyRegister = forwardRef<ScreenHandle, ScreenProps>(
       message: string;
     } | null>(null);
     const [busy, setBusy] = useState(false);
+    const queryClient = useQueryClient();
     const gridRef = useRef<AgDataGridHandle>(null);
 
     const focused = focusedIdx == null ? null : rows[focusedIdx] ?? null;
@@ -93,7 +96,7 @@ export const CompanyRegister = forwardRef<ScreenHandle, ScreenProps>(
       setBusy(true);
       const startedAt = Date.now();
       try {
-        const data = await fnGetDataSet<CompanyDto[]>(CONTROLLER, {
+        const data = await fetchDataset<CompanyDto[]>(queryClient, CONTROLLER, {
           search: search || undefined,
         });
         setRows(data);
@@ -107,7 +110,7 @@ export const CompanyRegister = forwardRef<ScreenHandle, ScreenProps>(
         await waitMinBusy(startedAt);
         setBusy(false);
       }
-    }, [search]);
+    }, [search, queryClient]);
 
     const columns = useMemo<ColDef[]>(
       () =>
@@ -240,6 +243,8 @@ export const CompanyRegister = forwardRef<ScreenHandle, ScreenProps>(
             return item;
           });
         const res = await fnSave<SaveResponse>(CONTROLLER, items);
+        // Saved rows must not be served from the 5s search cache.
+        invalidateDataset(queryClient, CONTROLLER);
         setDirty(false);
         gridRef.current?.clearDirtyRows();
         await showEnDialog("success", `Successfully saved ${res.savedCount ?? rows.length} compan${res.savedCount === 1 ? "y" : "ies"}.`);
@@ -248,7 +253,7 @@ export const CompanyRegister = forwardRef<ScreenHandle, ScreenProps>(
       } finally {
         setBusy(false);
       }
-    }, [rows]);
+    }, [queryClient, rows]);
 
     const updateField = useCallback(
       (field: keyof CompanyDto, value: unknown) => {

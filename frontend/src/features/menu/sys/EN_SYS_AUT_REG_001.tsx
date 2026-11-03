@@ -25,7 +25,9 @@ import {
   SearchPanelField,
 } from "../../../components/search-panel";
 import type { ScreenHandle, ScreenProps } from "../../screen-contract";
-import { callApi, fnGetDataSet } from "../../../api/endpoints";
+import { useQueryClient } from "@tanstack/react-query";
+import { fetchDataset, invalidateDataset } from "../../../api/query";
+import { callApi } from "../../../api/endpoints";
 import type {
   CompanyDto,
   CompanyMenuDto,
@@ -108,6 +110,7 @@ export const CompanyMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
     const [focusedCompany, setFocusedCompany] = useState<string | null>(null);
     const [dirty, setDirty] = useState(false);
     const [busy, setBusy] = useState(false);
+    const queryClient = useQueryClient();
     const changed = useRef<Map<string, boolean>>(new Map());
     const companyGridRef = useRef<AgDataGridHandle>(null);
     const userGridRef = useRef<AgDataGridHandle>(null);
@@ -117,9 +120,9 @@ export const CompanyMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
       const startedAt = Date.now();
       try {
         const [companyList, userList, menus] = await Promise.all([
-          fnGetDataSet<CompanyDto[]>("Companies"),
-          fnGetDataSet<UserDto[]>("Users"),
-          fnGetDataSet<MenuDto[]>("Menus"),
+          fetchDataset<CompanyDto[]>(queryClient, "Companies"),
+          fetchDataset<UserDto[]>(queryClient, "Users"),
+          fetchDataset<MenuDto[]>(queryClient, "Menus"),
         ]);
         setCompanies(companyList);
         setUsers(userList);
@@ -133,13 +136,14 @@ export const CompanyMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
         await waitMinBusy(startedAt);
         setBusy(false);
       }
-    }, []);
+    }, [queryClient]);
 
     // Load the focused company's assigned menus.
     const loadAssigned = useCallback(
       async (cdCompany: string) => {
         try {
-          const rows = await fnGetDataSet<CompanyMenuDto[]>(
+          const rows = await fetchDataset<CompanyMenuDto[]>(
+            queryClient,
             `CompanyMenus/${encodeURIComponent(cdCompany)}`,
           );
           setAssigned(new Set(rows.filter((r) => r.isAssigned).map((r) => r.cdMenu)));
@@ -149,7 +153,7 @@ export const CompanyMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
           await showEnDialog("error", e instanceof ApiError ? e.message : "Failed to load assigned menus.");
         }
       },
-      []
+      [queryClient]
     );
 
     const handleCompanyFocus = useCallback(
@@ -224,12 +228,13 @@ export const CompanyMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
         });
         setDirty(false);
         changed.current.clear();
+        invalidateDataset(queryClient, "CompanyMenus");
         await loadAssigned(focusedCompany);
         await showEnDialog("success", `Successfully saved ${res.savedCount ?? items.length} assignment${(res.savedCount ?? items.length) === 1 ? "" : "s"}.`);
       } catch (e) {
         await showEnDialog("error", e instanceof ApiError ? e.message : "Save failed.");
       }
-    }, [focusedCompany, loadAssigned]);
+    }, [focusedCompany, loadAssigned, queryClient]);
 
     useImperativeHandle(
       ref,

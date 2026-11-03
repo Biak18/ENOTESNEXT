@@ -26,12 +26,13 @@ import {
   SearchPanelField,
 } from "../../../components/search-panel";
 import type { ScreenHandle, ScreenProps } from "../../screen-contract";
-import { fnGetDataSet, fnSave } from "../../../api/endpoints";
+import { fnSave } from "../../../api/endpoints";
 import { waitMinBusy } from "../../../components/controls/waitMinBusy";
 import type { MenuDto, SaveResponse } from "../../../api/contracts";
 import { ApiError } from "../../../api/http";
 import { showEnConfirm, showEnDialog } from "../../../widgets/EnDialogService";
 import { useQueryClient } from "@tanstack/react-query";
+import { fetchDataset, invalidateDataset } from "../../../api/query";
 
 const typeOptions = [
   { code: "F", name: "Folder" },
@@ -115,7 +116,7 @@ export const MenuRegisterScreen = forwardRef<ScreenHandle, ScreenProps>(
       setBusy(true);
       const startedAt = Date.now();
       try {
-        const data = await fnGetDataSet<MenuDto[]>(CONTROLLER, {
+        const data = await fetchDataset<MenuDto[]>(queryClient, CONTROLLER, {
           search: search || undefined,
         });
         setRows(data);
@@ -131,7 +132,7 @@ export const MenuRegisterScreen = forwardRef<ScreenHandle, ScreenProps>(
         await waitMinBusy(startedAt);
         setBusy(false);
       }
-    }, [search]);
+    }, [search, queryClient]);
 
     const tree = useMemo(() => buildTree(rows), [rows]);
     const [busy, setBusy] = useState(false);
@@ -303,6 +304,8 @@ export const MenuRegisterScreen = forwardRef<ScreenHandle, ScreenProps>(
         setDirty(false);
         changedIds.current.clear();
         deletedIds.current.clear();
+        // Saved rows must not be served from the 5s search cache.
+        invalidateDataset(queryClient, CONTROLLER);
         // Sidebar menu tree is server state — refresh it in the background.
         void queryClient.invalidateQueries({ queryKey: ["menus"] });
         await showEnDialog(

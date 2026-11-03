@@ -18,7 +18,9 @@ import {
 } from "../../../components/search-panel";
 import type { ScreenHandle, ScreenProps } from "../../screen-contract";
 import EnSkeletonList from "../../../widgets/EnSkeletonList";
-import { fnGetDataSet, fnSave } from "../../../api/endpoints";
+import { useQueryClient } from "@tanstack/react-query";
+import { fetchDataset, invalidateDataset } from "../../../api/query";
+import { fnSave } from "../../../api/endpoints";
 import { waitMinBusy } from "../../../components/controls/waitMinBusy";
 import type { RoleMenuDto, RoleMenuItem, SaveResponse } from "../../../api/contracts";
 import { ApiError } from "../../../api/http";
@@ -61,13 +63,14 @@ export const RoleMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
     const [rows, setRows] = useState<MenuRow[]>([]);
     const [dirty, setDirty] = useState(false);
     const [busy, setBusy] = useState(false);
+    const queryClient = useQueryClient();
     const changed = useRef<Map<string, RoleMenuItem>>(new Map());
 
     const load = useCallback(async () => {
       setBusy(true);
       const startedAt = Date.now();
       try {
-        const data = await fnGetDataSet<RoleMenuDto[]>("RoleMenus");
+        const data = await fetchDataset<RoleMenuDto[]>(queryClient, "RoleMenus");
         setRows(data);
         changed.current.clear();
         setDirty(false);
@@ -77,7 +80,7 @@ export const RoleMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
         await waitMinBusy(startedAt);
         setBusy(false);
       }
-    }, []);
+    }, [queryClient]);
 
     
 /** Menu codes below rootCdMenu (excluding itself), following
@@ -161,12 +164,13 @@ const tree = useMemo(() => buildTree(rows), [rows]);
         const res = await fnSave<SaveResponse>("RoleMenus", items);
         setDirty(false);
         changed.current.clear();
+        invalidateDataset(queryClient, "RoleMenus");
         await showEnDialog("success", `Successfully saved ${res.savedCount ?? items.length} role assignment${res.savedCount === 1 ? "" : "s"}.`);
         await load();
       } catch (e) {
         await showEnDialog("error", e instanceof ApiError ? e.message : "Save failed.");
       }
-    }, [load]);
+    }, [load, queryClient]);
 
     useImperativeHandle(
       ref,

@@ -20,7 +20,9 @@ import {
   SearchPanelField,
 } from "../../../components/search-panel";
 import type { ScreenHandle, ScreenProps } from "../../screen-contract";
-import { fnGetDataSet, fnSave } from "../../../api/endpoints";
+import { useQueryClient } from "@tanstack/react-query";
+import { fetchDataset, invalidateDataset } from "../../../api/query";
+import { fnSave } from "../../../api/endpoints";
 import { waitMinBusy } from "../../../components/controls/waitMinBusy";
 import type { SaveResponse, UserDto, UserItem } from "../../../api/contracts";
 import { ApiError } from "../../../api/http";
@@ -123,13 +125,14 @@ export const UserRegister = forwardRef<ScreenHandle, ScreenProps>(
       message: string;
     } | null>(null);
     const [busy, setBusy] = useState(false);
+    const queryClient = useQueryClient();
     const gridRef = useRef<AgDataGridHandle>(null);
 
     const load = useCallback(async () => {
       setBusy(true);
       const startedAt = Date.now();
       try {
-        const data = await fnGetDataSet<UserDto[]>(CONTROLLER, {
+        const data = await fetchDataset<UserDto[]>(queryClient, CONTROLLER, {
           search: search || undefined,
         });
         // Stamp a stable unique key on every row so AG-Grid's getRowId is
@@ -148,7 +151,7 @@ export const UserRegister = forwardRef<ScreenHandle, ScreenProps>(
         await waitMinBusy(startedAt);
         setBusy(false);
       }
-    }, [search]);
+    }, [search, queryClient]);
 
     const columns = useMemo<ColDef[]>(
       () =>
@@ -276,6 +279,7 @@ export const UserRegister = forwardRef<ScreenHandle, ScreenProps>(
             state: __new ? "I" : "U",
           }));
         const res = await fnSave<SaveResponse>(CONTROLLER, items);
+        invalidateDataset(queryClient, CONTROLLER);
         setDirty(false);
         gridRef.current?.clearDirtyRows();
         showEnDialog(
@@ -290,7 +294,7 @@ export const UserRegister = forwardRef<ScreenHandle, ScreenProps>(
       } finally {
         setBusy(false);
       }
-    }, [rows]);
+    }, [queryClient, rows]);
 
     const handleFocusedRow = useCallback(
       (row: AgRow | null) => {
@@ -342,6 +346,7 @@ export const UserRegister = forwardRef<ScreenHandle, ScreenProps>(
           state: "U",
         };
         await fnSave<SaveResponse>(CONTROLLER, [item]);
+        invalidateDataset(queryClient, CONTROLLER);
         setPwdModal(null);
         setNewPassword("");
         setOldPassword("");
@@ -358,7 +363,7 @@ export const UserRegister = forwardRef<ScreenHandle, ScreenProps>(
       } finally {
         setBusy(false);
       }
-    }, [pwdModal, newPassword, oldPassword, rows, load]);
+    }, [pwdModal, newPassword, oldPassword, rows, load, queryClient]);
 
     useImperativeHandle(
       ref,
@@ -373,7 +378,7 @@ export const UserRegister = forwardRef<ScreenHandle, ScreenProps>(
           !dirty ||
           (await showEnConfirm("Discard unsaved user changes?")) === true,
       }),
-      [addRow, deleteFocused, dirty, onSearch, save],
+      [addRow, deleteFocused, dirty, onSearch, queryClient, save],
     );
 
     return (

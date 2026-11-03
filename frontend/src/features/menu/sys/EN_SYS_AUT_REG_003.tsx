@@ -25,7 +25,9 @@ import {
   SearchPanelField,
 } from "../../../components/search-panel";
 import type { ScreenHandle, ScreenProps } from "../../screen-contract";
-import { callApi, fnGetDataSet } from "../../../api/endpoints";
+import { useQueryClient } from "@tanstack/react-query";
+import { fetchDataset, invalidateDataset } from "../../../api/query";
+import { callApi } from "../../../api/endpoints";
 import type {
   MenuDto,
   SaveResponse,
@@ -112,6 +114,7 @@ export const UserMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
     const [focusedUser, setFocusedUser] = useState<string | null>(null);
     const [dirty, setDirty] = useState(false);
     const [busy, setBusy] = useState(false);
+    const queryClient = useQueryClient();
     const changed = useRef<Map<string, UserMenuItem>>(new Map());
     const gridRef = useRef<AgDataGridHandle>(null);
 
@@ -121,9 +124,11 @@ export const UserMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
       const startedAt = Date.now();
       try {
         const [userList, menuRows, userMenus] = await Promise.all([
-          fnGetDataSet<UserDto[]>("Users"),
-          fnGetDataSet<MenuDto[]>("Menus"),
-          fnGetDataSet<UserMenuDto[]>("UserMenus", { cdCompany: cdCom }),
+          fetchDataset<UserDto[]>(queryClient, "Users"),
+          fetchDataset<MenuDto[]>(queryClient, "Menus"),
+          fetchDataset<UserMenuDto[]>(queryClient, "UserMenus", {
+            cdCompany: cdCom,
+          }),
         ]);
         setUsers(userList);
         setTree(buildTree(menuRows, userMenus));
@@ -135,7 +140,7 @@ export const UserMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
         await waitMinBusy(startedAt);
         setBusy(false);
       }
-    }, [cdCom]);
+    }, [cdCom, queryClient]);
 
     const setAction = useCallback(
       (cdMenu: string, action: Action) => {
@@ -224,12 +229,13 @@ export const UserMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
         });
         setDirty(false);
         changed.current.clear();
+        invalidateDataset(queryClient, "UserMenus");
         await showEnDialog("success", `Successfully saved ${res.savedCount ?? 0} user-menu assignment${res.savedCount === 1 ? "" : "s"}.`);
         await load();
       } catch (e) {
         await showEnDialog("error", e instanceof ApiError ? e.message : "Save failed.");
       }
-    }, [cdCom, load]);
+    }, [cdCom, load, queryClient]);
 
     useImperativeHandle(
       ref,
