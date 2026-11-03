@@ -7,6 +7,7 @@
   useState,
 } from "react";
 import EnSkeletonList from "../../../widgets/EnSkeletonList";
+import { waitMinBusy } from "../../../components/controls/waitMinBusy";
 import { AgDataGrid } from "../../../components/data-grid/AgDataGrid";
 import type {
   AgColDef,
@@ -117,6 +118,7 @@ export const UserMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
     const load = useCallback(async () => {
       if (!cdCom) return;
       setBusy(true);
+      const startedAt = Date.now();
       try {
         const [userList, menuRows, userMenus] = await Promise.all([
           fnGetDataSet<UserDto[]>("Users"),
@@ -130,6 +132,7 @@ export const UserMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
       } catch (e) {
         await showEnDialog("error", e instanceof ApiError ? e.message : "Failed to load user menus.");
       } finally {
+        await waitMinBusy(startedAt);
         setBusy(false);
       }
     }, [cdCom]);
@@ -292,7 +295,7 @@ export const UserMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
               <span className="draft-state">{dirty ? "Unsaved" : "Saved"}</span>
             </div>
             <div className="flex-1 min-h-0 overflow-auto">
-              {busy && !tree.length ? (
+              {busy ? (
                 <EnSkeletonList rows={6} />
               ) : (
                 <EnTreeView<MenuNodeData>

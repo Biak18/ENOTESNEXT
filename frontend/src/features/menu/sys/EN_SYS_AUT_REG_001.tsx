@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import EnSkeletonList from "../../../widgets/EnSkeletonList";
+import { waitMinBusy } from "../../../components/controls/waitMinBusy";
 import { AgDataGrid } from "../../../components/data-grid/AgDataGrid";
 import type {
   AgColDef,
@@ -113,6 +114,7 @@ export const CompanyMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
 
     const load = useCallback(async () => {
       setBusy(true);
+      const startedAt = Date.now();
       try {
         const [companyList, userList, menus] = await Promise.all([
           fnGetDataSet<CompanyDto[]>("Companies"),
@@ -128,6 +130,7 @@ export const CompanyMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
       } catch (e) {
         await showEnDialog("error", e instanceof ApiError ? e.message : "Failed to load data.");
       } finally {
+        await waitMinBusy(startedAt);
         setBusy(false);
       }
     }, []);
@@ -307,7 +310,7 @@ export const CompanyMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
               <span className="draft-state">{dirty ? "Unsaved" : "Saved"}</span>
             </div>
             <div className="flex-1 min-h-0 overflow-auto">
-              {busy && !menuTree.length ? (
+              {busy ? (
                 <EnSkeletonList rows={6} />
               ) : (
                 <EnTreeView<NodeData>

@@ -21,6 +21,7 @@ import {
 } from "../../../components/search-panel";
 import type { ScreenHandle, ScreenProps } from "../../screen-contract";
 import { fnGetDataSet, fnSave } from "../../../api/endpoints";
+import { waitMinBusy } from "../../../components/controls/waitMinBusy";
 import type { SaveResponse, UserDto, UserItem } from "../../../api/contracts";
 import { ApiError } from "../../../api/http";
 import { showEnConfirm, showEnDialog } from "../../../widgets/EnDialogService";
@@ -126,6 +127,7 @@ export const UserRegister = forwardRef<ScreenHandle, ScreenProps>(
 
     const load = useCallback(async () => {
       setBusy(true);
+      const startedAt = Date.now();
       try {
         const data = await fnGetDataSet<UserDto[]>(CONTROLLER, {
           search: search || undefined,
@@ -143,6 +145,7 @@ export const UserRegister = forwardRef<ScreenHandle, ScreenProps>(
           e instanceof ApiError ? e.message : "Failed to load users.",
         );
       } finally {
+        await waitMinBusy(startedAt);
         setBusy(false);
       }
     }, [search]);

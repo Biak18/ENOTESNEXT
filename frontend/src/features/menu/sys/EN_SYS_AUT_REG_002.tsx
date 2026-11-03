@@ -19,6 +19,7 @@ import {
 import type { ScreenHandle, ScreenProps } from "../../screen-contract";
 import EnSkeletonList from "../../../widgets/EnSkeletonList";
 import { fnGetDataSet, fnSave } from "../../../api/endpoints";
+import { waitMinBusy } from "../../../components/controls/waitMinBusy";
 import type { RoleMenuDto, RoleMenuItem, SaveResponse } from "../../../api/contracts";
 import { ApiError } from "../../../api/http";
 import { showEnConfirm, showEnDialog } from "../../../widgets/EnDialogService";
@@ -64,6 +65,7 @@ export const RoleMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
 
     const load = useCallback(async () => {
       setBusy(true);
+      const startedAt = Date.now();
       try {
         const data = await fnGetDataSet<RoleMenuDto[]>("RoleMenus");
         setRows(data);
@@ -72,6 +74,7 @@ export const RoleMenuRegister = forwardRef<ScreenHandle, ScreenProps>(
       } catch (e) {
         await showEnDialog("error", e instanceof ApiError ? e.message : "Failed to load role menus.");
       } finally {
+        await waitMinBusy(startedAt);
         setBusy(false);
       }
     }, []);
@@ -197,7 +200,7 @@ const tree = useMemo(() => buildTree(rows), [rows]);
             <span className="draft-state">{dirty ? "Unsaved" : "Saved"}</span>
           </div>
           <div className="flex-1 min-h-0 overflow-auto">
-            {busy && !rows.length ? (
+            {busy ? (
               <EnSkeletonList rows={6} />
             ) : (
               <EnTreeView<MenuRow>

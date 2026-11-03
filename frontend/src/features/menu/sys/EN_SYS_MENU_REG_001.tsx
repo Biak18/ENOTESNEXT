@@ -27,6 +27,7 @@ import {
 } from "../../../components/search-panel";
 import type { ScreenHandle, ScreenProps } from "../../screen-contract";
 import { fnGetDataSet, fnSave } from "../../../api/endpoints";
+import { waitMinBusy } from "../../../components/controls/waitMinBusy";
 import type { MenuDto, SaveResponse } from "../../../api/contracts";
 import { ApiError } from "../../../api/http";
 import { showEnConfirm, showEnDialog } from "../../../widgets/EnDialogService";
@@ -112,6 +113,7 @@ export const MenuRegisterScreen = forwardRef<ScreenHandle, ScreenProps>(
 
     const load = useCallback(async () => {
       setBusy(true);
+      const startedAt = Date.now();
       try {
         const data = await fnGetDataSet<MenuDto[]>(CONTROLLER, {
           search: search || undefined,
@@ -126,6 +128,7 @@ export const MenuRegisterScreen = forwardRef<ScreenHandle, ScreenProps>(
           e instanceof ApiError ? e.message : "Failed to load menus.",
         );
       } finally {
+        await waitMinBusy(startedAt);
         setBusy(false);
       }
     }, [search]);
@@ -446,7 +449,7 @@ export const MenuRegisterScreen = forwardRef<ScreenHandle, ScreenProps>(
               }}
             >
               <div className="min-h-0 flex-1 overflow-auto">
-                {busy && !rows.length ? (
+                {busy ? (
                   <EnSkeletonList rows={6} />
                 ) : (
                   <EnTreeView<MenuRow>

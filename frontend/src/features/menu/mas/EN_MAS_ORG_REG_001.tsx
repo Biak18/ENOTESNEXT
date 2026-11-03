@@ -27,6 +27,7 @@ import type {
 } from "../../../widgets/EnFormTypes";
 import type { ScreenHandle, ScreenProps } from "../../screen-contract";
 import { fnGetDataSet, fnSave } from "../../../api/endpoints";
+import { waitMinBusy } from "../../../components/controls/waitMinBusy";
 import type { CompanyDto, CompanyItem, SaveResponse } from "../../../api/contracts";
 import { ApiError } from "../../../api/http";
 import { showEnConfirm, showEnDialog } from "../../../widgets/EnDialogService";
@@ -90,6 +91,7 @@ export const CompanyRegister = forwardRef<ScreenHandle, ScreenProps>(
 
     const load = useCallback(async () => {
       setBusy(true);
+      const startedAt = Date.now();
       try {
         const data = await fnGetDataSet<CompanyDto[]>(CONTROLLER, {
           search: search || undefined,
@@ -102,6 +104,7 @@ export const CompanyRegister = forwardRef<ScreenHandle, ScreenProps>(
       } catch (e) {
         await showEnDialog("error", e instanceof ApiError ? e.message : "Failed to load companies.");
       } finally {
+        await waitMinBusy(startedAt);
         setBusy(false);
       }
     }, [search]);
@@ -392,7 +395,7 @@ export const CompanyRegister = forwardRef<ScreenHandle, ScreenProps>(
               </div>
               <span className="draft-state">{dirty ? "Unsaved" : "Saved"}</span>
             </div>
-            {busy && !focused ? (
+            {busy ? (
               // During a search with no focused row, hold the detail panel's
               // shape with the shared-form skeleton.
               <EnSharedForm fields={formFields} columns={3} busy />
