@@ -215,3 +215,31 @@ export interface PurchaseOrderSaveResponse {
 export interface SaveResponse {
   savedCount: number;
 }
+
+/** GET /api/v1/EN_MAS_BAS_REG_001 */
+export interface ItemDto {
+  id: string;
+  cdCompany: string;
+  cdItem: string;
+  nmItem: string;
+  fgType: 10 | 20 | 30;
+  cdCategory: string | null;
+  cdUom: string;
+  prPx: number | null;
+  amCost: number | null;
+  flLot: boolean;
+  flActive: boolean;
+}
+
+/** POST /api/v1/EN_MAS_BAS_REG_001/save */
+export interface ItemSaveRequest {
+  cdItem: string;
+  nmItem: string;
+  fgType: 10 | 20 | 30;
+  cdCategory: string | null;
+  cdUom: string;
+  prPx: number | null;
+  flLot: boolean;
+  flActive: boolean;
+  state: "I" | "U" | "D";
+}

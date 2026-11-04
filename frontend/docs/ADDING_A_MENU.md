@@ -68,8 +68,10 @@ The existing `TabScreen` resolves the screen key through this registry. The menu
 - Render a `SearchPanel` first when the screen has search conditions, using `SearchPanelField` for the title-plus-control layout.
 - Use the shared `DataGrid` for tabular data. Define feature-specific columns, row types, validation, and callbacks beside the feature screen.
 - Use Material UI for supporting inputs, comboboxes, dialogs, and icons. Use Tailwind utilities for layout and keep ENOTES styles consistent with the shared palette.
-- Use realistic mock data only in this frontend phase. Do not add API calls, database schemas, authentication, or secrets.
+- Use realistic mock data when an API endpoint is not available or the feature is intentionally a mock. A menu screen may consume an existing authenticated API endpoint; do not connect browser code directly to a database or add backend endpoints without approval.
 - Preserve local tab state and provide clear empty, validation, and loading feedback as applicable.
+- For API-backed searches, use `fetchDataset` from `src/api/query.ts` with the controller and search criteria instead of calling endpoint helpers directly from Search handlers. Pass `cacheScope` for company- or user-scoped data; this only isolates client cache and does not replace backend authorization.
+- After a successful save or other mutation, call `invalidateDataset` for the controller so the next Search gets fresh data.
 
 ## 5. Verify the integration
 

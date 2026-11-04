@@ -18,6 +18,7 @@ export const menuItems: MenuNode[] = [
   ] },
   { id: "master-data", label: "Master data", kind: "folder", children: [
     { id: "en-mas-org-reg-001", label: "Companies", kind: "screen", screen: "EN_MAS_ORG_REG_001" },
+    { id: "en-mas-bas-reg-001", label: "Item registration", kind: "screen", screen: "EN_MAS_BAS_REG_001" },
   ] },
   { id: "security", label: "Security", kind: "folder", children: [
     { id: "en-sys-bas-reg-001", label: "Users", kind: "screen", screen: "EN_SYS_BAS_REG_001" },
@@ -45,6 +46,7 @@ export const screenTitles: Record<ScreenKey, string> = {
   dashboard: "Dashboard", purchase: "Purchase registration", "purchase-history": "Purchase history",
   "EN_PUR_BAS_REG_001": "Purchase order types",
   "EN_MAS_ORG_REG_001": "Company register",
+  "EN_MAS_BAS_REG_001": "Item registration",
   "EN_SYS_BAS_REG_001": "User register",
   "EN_SYS_MENU_REG_001": "Menu register",
   "EN_SYS_AUT_REG_001": "Company menu access",

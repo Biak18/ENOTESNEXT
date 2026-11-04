@@ -92,7 +92,7 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
-// Global exception handler — returns ProblemDetails for all unhandled exceptions
+// Global exception handler ï¿½ returns ProblemDetails for all unhandled exceptions
 app.UseExceptionHandler(exceptionHandlerApp =>
 {
     exceptionHandlerApp.Run(async context =>
@@ -113,6 +113,11 @@ app.UseExceptionHandler(exceptionHandlerApp =>
         {
             problemDetails.Status = StatusCodes.Status400BadRequest;
             problemDetails.Title = "Validation or business rule error.";
+        }
+        else if (exception is ConflictException)
+        {
+            problemDetails.Status = StatusCodes.Status409Conflict;
+            problemDetails.Title = "Conflict.";
         }
         else if (exception is FluentValidation.ValidationException)
         {

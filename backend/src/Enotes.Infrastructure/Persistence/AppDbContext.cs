@@ -13,6 +13,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<SysUserMenu> UserMenus { get; set; }
     public DbSet<SysCompanyMenu> CompanyMenus { get; set; }
     public DbSet<PurPurchaseOrder> PurchaseOrders { get; set; }
+    public DbSet<MasItem> Items { get; set; }
+    public DbSet<MasUom> Units { get; set; }
 
     public override Task<int> SaveChangesAsync(
         CancellationToken cancellationToken = default)

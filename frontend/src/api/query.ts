@@ -17,20 +17,24 @@ export const SEARCH_STALE_TIME_MS = 5_000;
 
 type QueryMap = Record<string, string | number | boolean | undefined | null>;
 
-function datasetKey(controller: string, query?: QueryMap) {
-  return ["dataset", controller, query ?? {}] as const;
+function datasetKey(
+  controller: string,
+  query?: QueryMap,
+  cacheScope?: string,
+) {
+  return ["dataset", controller, cacheScope ?? null, query ?? {}] as const;
 }
 
 export function fetchDataset<T = unknown>(
   queryClient: QueryClient,
   controller: string,
   query?: QueryMap,
-  staleTime: number = SEARCH_STALE_TIME_MS,
+  options: { cacheScope?: string; staleTime?: number } = {},
 ): Promise<T> {
   return queryClient.fetchQuery<T>({
-    queryKey: datasetKey(controller, query),
-    queryFn: () => fnGetDataSet<T>(controller, query),
-    staleTime,
+    queryKey: datasetKey(controller, query, options.cacheScope),
+    queryFn: ({ signal }) => fnGetDataSet<T>(controller, query, signal),
+    staleTime: options.staleTime ?? SEARCH_STALE_TIME_MS,
   });
 }
 

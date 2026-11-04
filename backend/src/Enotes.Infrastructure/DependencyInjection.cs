@@ -34,6 +34,7 @@ public static class DependencyInjection
         services.AddScoped<IRoleMenuRepository, EfRoleMenuRepository>();
         services.AddScoped<IUserMenuRepository, EfUserMenuRepository>();
         services.AddScoped<IPurchaseOrderRepository, EfPurchaseOrderRepository>();
+        services.AddScoped<IItemRepository, EfItemRepository>();
 
         return services;
     }

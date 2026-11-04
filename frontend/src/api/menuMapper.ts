@@ -24,6 +24,7 @@ export const screenAliases: Record<string, ScreenKey> = {
   // MAS / SYS master + authority screens
   EN_MAS_ORG_REG_001: "EN_MAS_ORG_REG_001",
   M_MAS_ORG_REG_001: "EN_MAS_ORG_REG_001",
+  EN_MAS_BAS_REG_001: "EN_MAS_BAS_REG_001",
   EN_SYS_BAS_REG_001: "EN_SYS_BAS_REG_001",
   M_SYS_BAS_REG_001: "EN_SYS_BAS_REG_001",
   SN_SYS_BAS_REG_001: "EN_SYS_BAS_REG_001",

@@ -1,5 +1,7 @@
 import { api, apiRequest, setToken } from "./http";
 import type {
+  ItemDto,
+  ItemSaveRequest,
   LoginResponse,
   MenuDto,
   PurchaseOrderDto,
@@ -135,7 +137,24 @@ export function savePurchaseOrder(order: PurchaseOrderSaveRequest) {
   });
 }
 
+export function getItems(
+  search?: string,
+  fgType?: number,
+  signal?: AbortSignal,
+) {
+  return callApi<ItemDto[]>("EN_MAS_BAS_REG_001", {
+    query: { search, fgType },
+    signal,
+  });
+}
+
+export function saveItems(items: ItemSaveRequest[]) {
+  return callApi<SaveResponse>("EN_MAS_BAS_REG_001/save", {
+    method: "POST",
+    body: { items },
+  });
+}
+
 /* Per-entity get/save wrappers were removed: each screen now calls its own
  * controller via fnGetDataSet / fnSave / callApi directly (SNOTES pattern). */
-
 

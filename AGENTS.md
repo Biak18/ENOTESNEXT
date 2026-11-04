@@ -4,11 +4,10 @@
 Move the ENOTES WinForms workflow to a browser-based React application. Preserve the compact desktop ERP feel shown in the user-provided screenshot: dark top bar, searchable tree sidebar, multiple tabs, and a screen workspace.
 
 ## Scope now
-- Frontend only, using mock data.
 - React + TypeScript + Vite.
 - Build the shell, menu tree/search, tab manager, shared action toolbar, and sample screens.
-- Do not connect Supabase/PostgreSQL or implement the .NET API yet.
-- Backend design will be discussed later.
+- Frontend screens may consume existing authenticated .NET API endpoints; use mock data when an endpoint is not available or the task explicitly calls for it.
+- Never connect browser code directly to Supabase/PostgreSQL. Do not add backend endpoints or database changes unless separately requested.
 
 Reference repository: https://github.com/Biak18/ENOTES
 
@@ -29,7 +28,7 @@ The toolbar is shared, but every action belongs to the active tab. Search, Inser
 Read `docs/PRD.md`, `docs/ARCHITECTURE.md`, `docs/UI_UX.md`, and `docs/ROADMAP.md` before implementation. Implement one phase at a time; run available lint, type-check, tests, and production build. Report changed files and verification results.
 
 ## Deferred
-Authentication, organization isolation, API endpoints, database schema, migrations, production data, and .NET Core API integration are out of scope until separately approved.
+New authentication capabilities, organization-isolation changes, API endpoints, database schema, migrations, and production data changes are out of scope unless separately approved.
 
 ## Grid implementation rules
 - Read the relevant project documentation, including `docs/PRD.md`, `docs/ARCHITECTURE.md`, `docs/UI_UX.md`, `docs/SKILLS.md`, and `docs/ROADMAP.md`, before implementation.
@@ -43,5 +42,4 @@ Authentication, organization isolation, API endpoints, database schema, migratio
 - Use the shared SearchPanelField for separate left-side titles and right-side controls, matching `docs/images/ENOTES_SAMPLE.jpg`.
 - Use Material UI for supporting form controls, dialogs, and icons; follow the shared white/sky-blue/blue 60/30/10 visual palette.
 - Use Tailwind CSS utilities in JSX for new layout and responsive styling. Keep shared design tokens and AG Grid theme/CSS overrides in focused CSS; use `@apply` only for shared styles that need a semantic component selector.
-
 
