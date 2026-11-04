@@ -477,6 +477,342 @@ export type Database = {
           },
         ]
       }
+      pur_poh: {
+        Row: {
+          cd_bp: string
+          cd_company: string
+          cd_cur: string
+          cd_user_amd: string | null
+          cd_user_reg: string | null
+          dc_note: string | null
+          dc_ref: string | null
+          dt_doc: string
+          dt_expect: string | null
+          ext: Json | null
+          no_doc: string
+          row_version: number
+          rt_ex: number
+          st_status: number
+          tm_amd: string | null
+          tm_reg: string
+        }
+        Insert: {
+          cd_bp: string
+          cd_company: string
+          cd_cur: string
+          cd_user_amd?: string | null
+          cd_user_reg?: string | null
+          dc_note?: string | null
+          dc_ref?: string | null
+          dt_doc?: string
+          dt_expect?: string | null
+          ext?: Json | null
+          no_doc: string
+          row_version?: number
+          rt_ex: number
+          st_status?: number
+          tm_amd?: string | null
+          tm_reg?: string
+        }
+        Update: {
+          cd_bp?: string
+          cd_company?: string
+          cd_cur?: string
+          cd_user_amd?: string | null
+          cd_user_reg?: string | null
+          dc_note?: string | null
+          dc_ref?: string | null
+          dt_doc?: string
+          dt_expect?: string | null
+          ext?: Json | null
+          no_doc?: string
+          row_version?: number
+          rt_ex?: number
+          st_status?: number
+          tm_amd?: string | null
+          tm_reg?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pur_poh_cd_company_cd_bp_fkey"
+            columns: ["cd_company", "cd_bp"]
+            isOneToOne: false
+            referencedRelation: "mas_bp"
+            referencedColumns: ["cd_company", "cd_bp"]
+          },
+          {
+            foreignKeyName: "pur_poh_cd_company_fkey"
+            columns: ["cd_company"]
+            isOneToOne: false
+            referencedRelation: "mas_company"
+            referencedColumns: ["cd_company"]
+          },
+          {
+            foreignKeyName: "pur_poh_cd_cur_fkey"
+            columns: ["cd_cur"]
+            isOneToOne: false
+            referencedRelation: "mas_cur"
+            referencedColumns: ["cd_cur"]
+          },
+        ]
+      }
+      pur_pol: {
+        Row: {
+          am: number
+          cd_company: string
+          cd_item: string
+          cd_uom: string
+          cd_user_amd: string | null
+          cd_user_reg: string | null
+          cd_wh: string
+          ext: Json | null
+          nm_item: string
+          no_doc: string
+          no_line: number
+          pr_px: number
+          qt: number
+          qt_io: number
+          row_version: number
+          tm_amd: string | null
+          tm_reg: string
+        }
+        Insert: {
+          am: number
+          cd_company: string
+          cd_item: string
+          cd_uom: string
+          cd_user_amd?: string | null
+          cd_user_reg?: string | null
+          cd_wh: string
+          ext?: Json | null
+          nm_item: string
+          no_doc: string
+          no_line: number
+          pr_px: number
+          qt: number
+          qt_io?: number
+          row_version?: number
+          tm_amd?: string | null
+          tm_reg?: string
+        }
+        Update: {
+          am?: number
+          cd_company?: string
+          cd_item?: string
+          cd_uom?: string
+          cd_user_amd?: string | null
+          cd_user_reg?: string | null
+          cd_wh?: string
+          ext?: Json | null
+          nm_item?: string
+          no_doc?: string
+          no_line?: number
+          pr_px?: number
+          qt?: number
+          qt_io?: number
+          row_version?: number
+          tm_amd?: string | null
+          tm_reg?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pur_pol_cd_company_cd_item_fkey"
+            columns: ["cd_company", "cd_item"]
+            isOneToOne: false
+            referencedRelation: "mas_item"
+            referencedColumns: ["cd_company", "cd_item"]
+          },
+          {
+            foreignKeyName: "pur_pol_cd_company_cd_wh_fkey"
+            columns: ["cd_company", "cd_wh"]
+            isOneToOne: false
+            referencedRelation: "mas_wh"
+            referencedColumns: ["cd_company", "cd_wh"]
+          },
+          {
+            foreignKeyName: "pur_pol_cd_company_no_doc_fkey"
+            columns: ["cd_company", "no_doc"]
+            isOneToOne: false
+            referencedRelation: "pur_poh"
+            referencedColumns: ["cd_company", "no_doc"]
+          },
+          {
+            foreignKeyName: "pur_pol_cd_uom_fkey"
+            columns: ["cd_uom"]
+            isOneToOne: false
+            referencedRelation: "mas_uom"
+            referencedColumns: ["cd_uom"]
+          },
+        ]
+      }
+      sal_soh: {
+        Row: {
+          cd_bp: string
+          cd_company: string
+          cd_cur: string
+          cd_user_amd: string | null
+          cd_user_reg: string | null
+          dc_note: string | null
+          dc_ref: string | null
+          dt_doc: string
+          dt_expect: string | null
+          ext: Json | null
+          no_doc: string
+          row_version: number
+          rt_ex: number
+          st_status: number
+          tm_amd: string | null
+          tm_reg: string
+        }
+        Insert: {
+          cd_bp: string
+          cd_company: string
+          cd_cur: string
+          cd_user_amd?: string | null
+          cd_user_reg?: string | null
+          dc_note?: string | null
+          dc_ref?: string | null
+          dt_doc?: string
+          dt_expect?: string | null
+          ext?: Json | null
+          no_doc: string
+          row_version?: number
+          rt_ex: number
+          st_status?: number
+          tm_amd?: string | null
+          tm_reg?: string
+        }
+        Update: {
+          cd_bp?: string
+          cd_company?: string
+          cd_cur?: string
+          cd_user_amd?: string | null
+          cd_user_reg?: string | null
+          dc_note?: string | null
+          dc_ref?: string | null
+          dt_doc?: string
+          dt_expect?: string | null
+          ext?: Json | null
+          no_doc?: string
+          row_version?: number
+          rt_ex?: number
+          st_status?: number
+          tm_amd?: string | null
+          tm_reg?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sal_soh_cd_company_cd_bp_fkey"
+            columns: ["cd_company", "cd_bp"]
+            isOneToOne: false
+            referencedRelation: "mas_bp"
+            referencedColumns: ["cd_company", "cd_bp"]
+          },
+          {
+            foreignKeyName: "sal_soh_cd_company_fkey"
+            columns: ["cd_company"]
+            isOneToOne: false
+            referencedRelation: "mas_company"
+            referencedColumns: ["cd_company"]
+          },
+          {
+            foreignKeyName: "sal_soh_cd_cur_fkey"
+            columns: ["cd_cur"]
+            isOneToOne: false
+            referencedRelation: "mas_cur"
+            referencedColumns: ["cd_cur"]
+          },
+        ]
+      }
+      sal_sol: {
+        Row: {
+          am: number
+          cd_company: string
+          cd_item: string
+          cd_uom: string
+          cd_user_amd: string | null
+          cd_user_reg: string | null
+          cd_wh: string
+          ext: Json | null
+          nm_item: string
+          no_doc: string
+          no_line: number
+          pr_px: number
+          qt: number
+          qt_io: number
+          row_version: number
+          tm_amd: string | null
+          tm_reg: string
+        }
+        Insert: {
+          am: number
+          cd_company: string
+          cd_item: string
+          cd_uom: string
+          cd_user_amd?: string | null
+          cd_user_reg?: string | null
+          cd_wh: string
+          ext?: Json | null
+          nm_item: string
+          no_doc: string
+          no_line: number
+          pr_px: number
+          qt: number
+          qt_io?: number
+          row_version?: number
+          tm_amd?: string | null
+          tm_reg?: string
+        }
+        Update: {
+          am?: number
+          cd_company?: string
+          cd_item?: string
+          cd_uom?: string
+          cd_user_amd?: string | null
+          cd_user_reg?: string | null
+          cd_wh?: string
+          ext?: Json | null
+          nm_item?: string
+          no_doc?: string
+          no_line?: number
+          pr_px?: number
+          qt?: number
+          qt_io?: number
+          row_version?: number
+          tm_amd?: string | null
+          tm_reg?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sal_sol_cd_company_cd_item_fkey"
+            columns: ["cd_company", "cd_item"]
+            isOneToOne: false
+            referencedRelation: "mas_item"
+            referencedColumns: ["cd_company", "cd_item"]
+          },
+          {
+            foreignKeyName: "sal_sol_cd_company_cd_wh_fkey"
+            columns: ["cd_company", "cd_wh"]
+            isOneToOne: false
+            referencedRelation: "mas_wh"
+            referencedColumns: ["cd_company", "cd_wh"]
+          },
+          {
+            foreignKeyName: "sal_sol_cd_company_no_doc_fkey"
+            columns: ["cd_company", "no_doc"]
+            isOneToOne: false
+            referencedRelation: "sal_soh"
+            referencedColumns: ["cd_company", "no_doc"]
+          },
+          {
+            foreignKeyName: "sal_sol_cd_uom_fkey"
+            columns: ["cd_uom"]
+            isOneToOne: false
+            referencedRelation: "mas_uom"
+            referencedColumns: ["cd_uom"]
+          },
+        ]
+      }
       sys_companymenu: {
         Row: {
           cd_company: string
@@ -562,6 +898,33 @@ export type Database = {
             referencedColumns: ["cd_menu"]
           },
         ]
+      }
+      sys_seq: {
+        Row: {
+          cd_company: string
+          cd_prefix: string
+          no_last: number
+          no_period: string
+          tm_amd: string | null
+          tm_reg: string
+        }
+        Insert: {
+          cd_company: string
+          cd_prefix: string
+          no_last?: number
+          no_period: string
+          tm_amd?: string | null
+          tm_reg?: string
+        }
+        Update: {
+          cd_company?: string
+          cd_prefix?: string
+          no_last?: number
+          no_period?: string
+          tm_amd?: string | null
+          tm_reg?: string
+        }
+        Relationships: []
       }
       sys_user: {
         Row: {
@@ -699,7 +1062,40 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      v_pur_am: {
+        Row: {
+          am_base: number | null
+          am_tot: number | null
+          cd_company: string | null
+          no_doc: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pur_poh_cd_company_fkey"
+            columns: ["cd_company"]
+            isOneToOne: false
+            referencedRelation: "mas_company"
+            referencedColumns: ["cd_company"]
+          },
+        ]
+      }
+      v_sal_am: {
+        Row: {
+          am_base: number | null
+          am_tot: number | null
+          cd_company: string | null
+          no_doc: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sal_soh_cd_company_fkey"
+            columns: ["cd_company"]
+            isOneToOne: false
+            referencedRelation: "mas_company"
+            referencedColumns: ["cd_company"]
+          },
+        ]
+      }
     }
     Functions: {
       my_companies: {
