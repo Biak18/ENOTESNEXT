@@ -1,3 +1,5 @@
+import type { EnOption } from "../../../components/controls";
+
 export type ItemType = 10 | 20 | 30;
 
 export type ItemRow = {
@@ -34,13 +36,14 @@ export type ItemEditResult =
   | { ok: true; value: string | number | boolean | null }
   | { ok: false; message: string };
 
-export const itemTypeOptions: { code: ItemType; name: string }[] = [
-  { code: 10, name: "Stock" },
-  { code: 20, name: "Non-stock" },
-  { code: 30, name: "Service" },
+/** EnOption codes are strings; fgType stays numeric in ItemRow/ItemFilters. */
+export const itemTypeOptions: EnOption[] = [
+  { code: "10", name: "Stock" },
+  { code: "20", name: "Non-stock" },
+  { code: "30", name: "Service" },
 ];
 
-export const itemUomOptions = [
+export const itemUomOptions: EnOption[] = [
   { code: "EA", name: "Each" },
   { code: "KG", name: "Kilogram" },
   { code: "BOX", name: "Box" },
@@ -132,7 +135,7 @@ export function validateItemField(
 
   if (field === "fgType") {
     const value = Number(raw);
-    if (itemTypeOptions.some((option) => option.code === value)) {
+    if (itemTypeOptions.some((option) => Number(option.code) === value)) {
       return { ok: true, value };
     }
     return { ok: false, message: "Choose a valid item type." };

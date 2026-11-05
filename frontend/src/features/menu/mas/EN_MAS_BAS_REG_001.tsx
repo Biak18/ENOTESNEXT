@@ -60,13 +60,10 @@ function isEditableField(field: string): field is EditableItemField {
   return editableFields.has(field as EditableItemField);
 }
 
-// EnComboBox works with { code, name } options; item types are numeric codes.
+// EnComboBox options are already EnOption-shaped ({ code, name }).
 const itemTypeFilterOptions = [
   { code: "", name: "All types" },
-  ...itemTypeOptions.map((option) => ({
-    code: String(option.code),
-    name: option.name,
-  })),
+  ...itemTypeOptions,
 ];
 
 const baseColumnDefs: AgColDef[] = [
@@ -90,11 +87,12 @@ const baseColumnDefs: AgColDef[] = [
     width: 115,
     cellEditor: "agSelectCellEditor",
     cellEditorParams: {
-      values: itemTypeOptions.map((option) => String(option.code)),
+      values: itemTypeOptions.map((option) => option.code),
     },
     valueFormatter: (params) =>
-      itemTypeOptions.find((option) => option.code === Number(params.value))
-        ?.name ?? "",
+      itemTypeOptions.find(
+        (option) => Number(option.code) === Number(params.value),
+      )?.name ?? "",
   },
   { field: "cdCategory", headerName: "CATEGORY", width: 135 },
   {
@@ -442,8 +440,9 @@ export const ItemRegister = forwardRef<ScreenHandle, ScreenProps>(
             item.cdCompany,
             item.cdItem,
             item.nmItem,
-            itemTypeOptions.find((option) => option.code === item.fgType)
-              ?.name ?? "",
+            itemTypeOptions.find(
+              (option) => Number(option.code) === item.fgType,
+            )?.name ?? "",
             item.cdCategory ?? "",
             item.cdUom,
             item.prPx == null
