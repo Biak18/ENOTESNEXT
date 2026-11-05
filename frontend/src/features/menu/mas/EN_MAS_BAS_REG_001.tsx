@@ -9,8 +9,6 @@ import {
 } from "react";
 import type { ColDef } from "ag-grid-community";
 import { useQueryClient } from "@tanstack/react-query";
-import MenuItem from "@mui/material/MenuItem";
-import TextField from "@mui/material/TextField";
 import writeXlsxFile from "write-excel-file/browser";
 import { AgDataGrid } from "../../../components/data-grid/AgDataGrid";
 import type {
@@ -18,10 +16,13 @@ import type {
   AgDataGridHandle,
   AgRow,
 } from "../../../components/data-grid/agDataGridTypes";
+import { EnComboBox, EnTextBox } from "../../../components/controls";
+import { waitMinBusy } from "../../../components/controls/waitMinBusy";
 import {
   SearchPanel,
   SearchPanelField,
 } from "../../../components/search-panel";
+import { useScreenSearch } from "../../useScreenSearch";
 import { useApp } from "../../../app/AppContext";
 import type { ScreenHandle, ScreenProps } from "../../screen-contract";
 import { showEnConfirm, showEnDialog } from "../../../widgets/EnDialogService";
@@ -36,6 +37,7 @@ import {
   type EditableItemField,
   type ItemFilters,
   type ItemRow,
+  type ItemType,
 } from "./itemRegisterData";
 import type { ItemDto, ItemSaveRequest } from "../../../api/contracts";
 import { saveItems } from "../../../api/endpoints";
@@ -57,6 +59,15 @@ const editableFields = new Set<EditableItemField>([
 function isEditableField(field: string): field is EditableItemField {
   return editableFields.has(field as EditableItemField);
 }
+
+// EnComboBox works with { code, name } options; item types are numeric codes.
+const itemTypeFilterOptions = [
+  { code: "", name: "All types" },
+  ...itemTypeOptions.map((option) => ({
+    code: String(option.value),
+    name: option.label,
+  })),
+];
 
 const baseColumnDefs: AgColDef[] = [
   {
@@ -223,6 +234,7 @@ export const ItemRegister = forwardRef<ScreenHandle, ScreenProps>(
 
     const loadItems = useCallback(async (filters: ItemFilters) => {
       const request = ++activeRequest.current;
+      const startedAt = Date.now();
       setBusy(true);
       try {
         const data = await fetchDataset<ItemDto[]>(
@@ -261,6 +273,7 @@ export const ItemRegister = forwardRef<ScreenHandle, ScreenProps>(
         return false;
       } finally {
         if (activeRequest.current === request) {
+          await waitMinBusy(startedAt);
           setBusy(false);
         }
       }
@@ -272,8 +285,7 @@ export const ItemRegister = forwardRef<ScreenHandle, ScreenProps>(
       };
     }, []);
 
-    const search = useCallback(async () => {
-      searchRef.current?.focus();
+    const runSearch = useCallback(async () => {
       if (busy) return;
       if (dirty) {
         const discard = await showEnConfirm(
@@ -281,10 +293,11 @@ export const ItemRegister = forwardRef<ScreenHandle, ScreenProps>(
         );
         if (discard !== true) return;
       }
-      if (await loadItems(draftFilters)) {
-        window.setTimeout(() => gridRef.current?.focusFirst(), 0);
-      }
-    }, [busy, dirty, draftFilters, loadItems, searchRef]);
+      await loadItems(draftFilters);
+    }, [busy, dirty, draftFilters, loadItems]);
+
+    // GLOBAL Search: run the query, then focus the first grid row.
+    const onSearch = useScreenSearch(runSearch, gridRef);
 
     const addRow = useCallback(() => {
       if (!companyCode) {
@@ -487,7 +500,7 @@ export const ItemRegister = forwardRef<ScreenHandle, ScreenProps>(
     useImperativeHandle(
       ref,
       () => ({
-        search,
+        search: onSearch,
         insert: addRow,
         delete: deleteFocusedRow,
         save,
@@ -500,45 +513,34 @@ export const ItemRegister = forwardRef<ScreenHandle, ScreenProps>(
             "Discard unsaved item changes?",
           )) === true,
       }),
-      [addRow, deleteFocusedRow, dirty, exportExcel, save, search],
+      [addRow, deleteFocusedRow, dirty, exportExcel, onSearch, save],
     );
 
     return (
       <div className="feature-screen po-prototype">
         <SearchPanel ariaLabel="Item search conditions">
           <SearchPanelField title="Item" htmlFor="item-search">
-            <TextField
-              id="item-search"
-              fullWidth
-              size="small"
-              value={draftFilters.item}
-              onChange={(event) => updateFilters({ item: event.target.value })}
-              placeholder="Code, name, category, or unit"
+            <EnTextBox
+              label="Item"
+              defaultValue={draftFilters.item}
+              onValueChanged={(value) => updateFilters({ item: value })}
+              placeHolderText="Code, name, category, or unit"
               inputRef={searchRef}
+              isSearchPanel
             />
           </SearchPanelField>
           <SearchPanelField title="Type" htmlFor="item-type-filter">
-            <TextField
-              id="item-type-filter"
-              fullWidth
-              size="small"
-              select
-              value={draftFilters.type}
-              onChange={(event) => {
-                const value = event.target.value;
-                const option = itemTypeOptions.find(
-                  (itemType) => String(itemType.value) === value,
-                );
-                updateFilters({ type: option?.value ?? "" });
-              }}
-            >
-              <MenuItem value="">All types</MenuItem>
-              {itemTypeOptions.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </TextField>
+            <EnComboBox
+              label="Type"
+              defaultValue={draftFilters.type === "" ? "" : String(draftFilters.type)}
+              options={itemTypeFilterOptions}
+              onValueChanged={(value) =>
+                updateFilters({
+                  type: value === "" ? "" : (Number(value) as ItemType),
+                })
+              }
+              isSearchPanel
+            />
           </SearchPanelField>
         </SearchPanel>
 
