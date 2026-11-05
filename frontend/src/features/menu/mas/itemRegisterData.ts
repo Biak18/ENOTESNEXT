@@ -34,10 +34,10 @@ export type ItemEditResult =
   | { ok: true; value: string | number | boolean | null }
   | { ok: false; message: string };
 
-export const itemTypeOptions: { value: ItemType; label: string }[] = [
-  { value: 10, label: "Stock" },
-  { value: 20, label: "Non-stock" },
-  { value: 30, label: "Service" },
+export const itemTypeOptions: { code: ItemType; name: string }[] = [
+  { code: 10, name: "Stock" },
+  { code: 20, name: "Non-stock" },
+  { code: 30, name: "Service" },
 ];
 
 export const itemUomOptions = [
@@ -132,7 +132,7 @@ export function validateItemField(
 
   if (field === "fgType") {
     const value = Number(raw);
-    if (itemTypeOptions.some((option) => option.value === value)) {
+    if (itemTypeOptions.some((option) => option.code === value)) {
       return { ok: true, value };
     }
     return { ok: false, message: "Choose a valid item type." };
